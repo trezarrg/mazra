@@ -6,7 +6,7 @@ import { Notice } from "@/components/ui";
 import { ClearNavigation } from "@/components/app-navigation";
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const message = error === "config" ? "Koneksi belum dikonfigurasi. Hubungi pengelola." : error === "missing" ? "Isi email dan kata sandi." : error ? "Email atau kata sandi tidak sesuai." : null;
+  const message = error === "config" ? "Koneksi belum dikonfigurasi. Hubungi pengelola." : error === "missing" ? "Isi email atau nama pengguna dan kata sandi." : error ? "Email, nama pengguna, atau kata sandi tidak sesuai." : null;
   return (
     <main className="login-layout">
       <ClearNavigation/>
@@ -28,8 +28,8 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
             <p className="login-intro">Masuk untuk melanjutkan pekerjaan.</p>
           </header>
           <form action={login} className="form login-form">
-            <label htmlFor="login-email">Email
-              <input id="login-email" name="email" type="email" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="nama@email.com" required/>
+            <label htmlFor="login-email">Email atau nama pengguna
+              <input id="login-email" name="email" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="Email atau owner" required/>
             </label>
             <div className="login-password-field">
               <label htmlFor="login-password">Kata sandi</label>

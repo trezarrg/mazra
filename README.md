@@ -8,6 +8,8 @@ Acuan produk: `PRD_Sistem_Usaha_Ayam_Potong.md`. Progres ada di `task.md`.
 
 Login memakai akun Supabase Auth yang dibuat administrator. Pendaftaran publik dinonaktifkan pada proyek Supabase. Migrasi di `supabase/migrations`, termasuk operasional sampai `20261031001200`, telah diterapkan pada proyek `vcephhquqtppxuvypeft`. Akun developer digunakan untuk akses penuh. Pengguna tanpa profil aktif tidak memiliki akses ke data melalui RLS. Docker dan Supabase lokal tidak diperlukan.
 
+Untuk demonstrasi Rizki Farm, nama pengguna `owner` adalah alias sementara untuk akun `owner@example.invalid`; akun lain masuk dengan email. Akun demo memiliki akses Owner ke data usaha dan harus dinonaktifkan setelah demonstrasi. Jangan gunakan alias atau akun demo ini untuk instalasi pelanggan lain.
+
 Aplikasi mencakup DO/penerimaan, timbang lapangan, produksi/konversi, penjualan/pengiriman/retur, hutang/piutang, pembayaran, kas penagih/setoran, buku keuangan, SDM/kasbon, aset, dashboard, riwayat, ekspor dan bukti privat. Laporan akuntansi menandai prasyarat HPP/valuasi dan saldo awal yang belum disahkan.
 
 Alur penggunaan, pengujian, backup/restore, dan prasyarat sebelum produksi ada di [docs/operasional.md](docs/operasional.md). Status implementasi dan pekerjaan sebelum go-live ada di [task.md](task.md).
