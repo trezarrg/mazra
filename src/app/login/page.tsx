@@ -1,11 +1,45 @@
 import Image from "next/image";
 import { login } from "./actions";
-import { Icon } from "@/components/icon";
 import { PasswordInput } from "@/components/password-input";
 import { SubmitButton } from "@/components/submit-button";
 import { Notice } from "@/components/ui";
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   const message = error === "config" ? "Koneksi belum dikonfigurasi. Hubungi pengelola." : error === "missing" ? "Isi email dan kata sandi." : error ? "Email atau kata sandi tidak sesuai." : null;
-  return <main className="login-layout"><section className="login-art" aria-label="Usaha Ayam Potong"><div className="app-brand"><span className="brand-mark brand-logo"><Image src="/Logo.png" alt="" width={42} height={42}/></span><span>Rizki Berkah Abadi Farm<small>Operasional usaha</small></span></div><div className="login-art-copy"><span className="pill-label"><span className="status-dot"/>SATU TEMPAT UNTUK USAHA ANDA</span><h2>Usaha rapi.<br/>Kerja lebih<br/><em>ringan.</em></h2><p>Dari ayam masuk sampai uang tercatat.<br/>Kelola usaha dalam satu genggaman.</p></div><div className="login-art-grid" aria-hidden="true"><span><Icon name="box"/>Stok terpantau</span><span><Icon name="wallet"/>Uang tercatat</span><span><Icon name="users"/>Mitra terkelola</span></div><span className="art-orbit orbit-one"/><span className="art-orbit orbit-two"/></section><section className="login-panel"><div className="login-form-wrap"><div className="login-mobile-brand"><span className="brand-mark brand-logo"><Image src="/Logo.png" alt="" width={39} height={39}/></span><span>Rizki Berkah Abadi Farm</span></div><span className="eyebrow">SELAMAT DATANG KEMBALI</span><h1>Mulai hari<br/>lebih teratur.</h1><p className="login-intro">Masuk ke ruang kerja usaha Anda.</p><form action={login} className="form login-form"><label>Email<span className="input-with-icon"><Icon name="mail" size={19}/><input name="email" type="email" autoComplete="username" placeholder="nama@email.com" required/></span></label><label>Kata sandi<PasswordInput/></label>{message && <Notice error>{message}</Notice>}<SubmitButton>Masuk ke aplikasi</SubmitButton></form><p className="login-security"><Icon name="shield" size={16}/>Akses khusus tim usaha</p></div><p className="login-footer">RIZKI BERKAH ABADI FARM <span>Rapi setiap hari.</span></p></section></main>;
+  return (
+    <main className="login-layout">
+      <section className="login-art" aria-label="Rizki Berkah Abadi Farm">
+        <Image className="login-logo" src="/Logo.png" alt="Rizki Berkah Abadi Farm" width={180} height={120} preload/>
+        <div className="login-art-copy">
+          <h2>Usaha rapi.<br/>Kerja lebih<br/><em>ringan.</em></h2>
+          <p>Pembelian, produksi, dan penjualan.<br/>Tercatat dalam satu tempat.</p>
+        </div>
+        <p className="login-art-footer">Pencatatan usaha ayam potong</p>
+      </section>
+      <section className="login-panel" aria-labelledby="login-title">
+        <div className="login-form-wrap">
+          <div className="login-mobile-brand">
+            <Image className="login-logo" src="/Logo.png" alt="Rizki Berkah Abadi Farm" width={180} height={120} preload/>
+          </div>
+          <header className="login-heading">
+            <h1 id="login-title">Selamat datang.</h1>
+            <p className="login-intro">Masuk untuk melanjutkan pekerjaan.</p>
+          </header>
+          <form action={login} className="form login-form">
+            <label htmlFor="login-email">Email
+              <input id="login-email" name="email" type="email" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="nama@email.com" required/>
+            </label>
+            <div className="login-password-field">
+              <label htmlFor="login-password">Kata sandi</label>
+              <PasswordInput/>
+            </div>
+            {message && <Notice error>{message}</Notice>}
+            <SubmitButton>Masuk</SubmitButton>
+          </form>
+          <p className="login-security">Akses khusus tim usaha</p>
+        </div>
+        <footer className="login-credit">© 2026 <strong>TrezarRG</strong></footer>
+      </section>
+    </main>
+  );
 }

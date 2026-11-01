@@ -68,4 +68,4 @@ Acuan: PRD versi 1.2, 29 Oktober 2026. Diperbarui 31 Oktober 2026. Status implem
 - [ ] Validasi dua saldo awal kas lama, akun aktif, penanggung jawab kas penagih, dan saldo hutang/piutang saat mulai memakai aplikasi.
 - [ ] Pastikan backup yang dapat dipulihkan dan lakukan latihan restore pada lingkungan terpisah. Pemeriksaan CLI 31 Oktober 2026: WALG aktif, PITR tidak aktif, tidak ada rentang timestamp pemulihan yang dikembalikan. Prosedur ada di `docs/operasional.md`; restore produksi tidak dijalankan.
 - [ ] Pengesahan metode HPP/valuasi, biaya langsung dan penyusutan bila laporan akan dinyatakan formal. Mode **Belum lengkap** tetap dapat digunakan sesuai persetujuan pengguna.
-- [ ] Hosting/rilis produksi, domain dan pemantauan ditetapkan bila aplikasi hendak dipublikasikan. Belum ada commit, push, atau deploy web; folder kerja saat ini tidak memiliki repositori Git.
+- [ ] Aplikasi telah diterbitkan pada Cloudflare Workers. Tentukan domain dan pemantauan untuk penggunaan produksi.

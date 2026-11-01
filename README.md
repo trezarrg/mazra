@@ -14,7 +14,7 @@ Alur penggunaan, pengujian, backup/restore, dan prasyarat sebelum produksi ada d
 
 ## Cloudflare Workers
 
-Aplikasi disiapkan untuk Workers menggunakan vinext. Gunakan Node.js 24.22 atau lebih baru dalam lini 24, lalu jalankan `npm ci`. Untuk deploy dari komputer, isi `.env.local` dengan dua nilai Supabase yang sama seperti di atas, masuk dengan `npx cf auth login`, lalu jalankan `npm run deploy:vinext`. Perintah ini membangun dan menerbitkan Worker bernama `rizkifarm` pada akun Cloudflare yang dipilih.
+Aplikasi disiapkan untuk Workers menggunakan vinext. Gunakan Node.js 24.22 atau lebih baru dalam lini 24, lalu jalankan `npm ci`. Untuk deploy dari komputer, isi `.env.local` dengan dua nilai Supabase yang sama seperti di atas, masuk dengan `npx cf auth login`, lalu jalankan `npm run deploy:vinext`. Perintah ini membangun dan menerbitkan Worker bernama `mazra` pada akun Cloudflare yang dipilih.
 
 Untuk Workers Builds, hubungkan repositori ke Cloudflare dan gunakan `npm run build:vinext` sebagai build command serta `npm run deploy:vinext` sebagai deploy command. Atur `NODE_VERSION` ke versi Node 24.22 atau lebih baru, serta isi `NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` pada variabel lingkungan build. Kedua nilai ini bersifat publik dan disertakan dalam hasil build; jangan gunakan service-role key. Lakukan build ulang setiap kali nilainya berubah. Pastikan repositori dan akun Cloudflare yang dipilih memang milik proyek ini.
 

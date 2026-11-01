@@ -199,35 +199,6 @@ input, textarea, select { min-width: 0; }
 .stock-overview p span { font-size: 11px; color: #8e9988; }
 .stock-overview-icon { background: #e1e8d9; color: #9aab88; width: 73px; height: 73px; border-radius: 23px; display: grid; place-items: center; flex-shrink: 0; }
 .access-page { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.login-layout { min-height: 100dvh; display: grid; grid-template-columns: 1fr 1fr; background: #fff; }
-.login-art { position: relative; isolation: isolate; display: flex; flex-direction: column; overflow: hidden; background: #d5efaf; margin: 16px; border-radius: 29px; padding: 39px 42px; min-height: calc(100dvh - 32px); }
-.login-art .brand-mark { background: #293e26; color: #d7f6ad; }
-.login-art .app-brand small { color: #819369; }
-.login-art-copy { padding: 65px 0 40px; margin: auto 0; }
-.pill-label { display: inline-flex; align-items: center; gap: 8px; font-size: 8px; font-weight: 700; letter-spacing: .1em; color: #6b8053; background: #ffffff45; border: 1px solid #ffffff30; border-radius: 20px; padding: 9px 11px; }
-.login-art h2 { font-size: clamp(45px, 5vw, 78px); font-weight: 650; letter-spacing: -3px; line-height: 1.1; margin: 28px 0 24px; color: #314a28; }
-.login-art h2 em { font-style: normal; color: #82a25a; }
-.login-art-copy p { color: #81966b; font-size: 12px; line-height: 1.9; }
-.login-art-grid { display: flex; gap: 22px; flex-wrap: wrap; margin-top: auto; font-size: 10px; color: #71885b; }
-.login-art-grid > span { display: flex; gap: 7px; align-items: center; }
-.login-art-grid svg { width: 16px; height: 16px; }
-.art-orbit { width: 390px; height: 390px; border-radius: 50%; border: 55px solid #ecffd622; position: absolute; right: -230px; top: 25%; z-index: -1; }
-.orbit-two { width: 570px; height: 570px; border: 1px solid #b4d68c50; top: 15%; right: -320px; }
-.login-panel { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 48px; position: relative; }
-.login-form-wrap { width: min(100%, 350px); padding: 50px 0 70px; }
-.login-form-wrap h1 { font-size: 42px; font-weight: 650; letter-spacing: -1.8px; line-height: 1.15; margin: 18px 0 16px; }
-.login-intro { font-size: 12px; color: #9ba397; margin-bottom: 37px; }
-.login-form { gap: 21px; }
-.login-form .submit-button { background: var(--lime); color: #3b512b; margin-top: 8px; }
-.login-form .submit-button:hover { background: #b9e459; }
-.input-with-icon { position: relative; display: block; width: 100%; }
-.input-with-icon > svg { position: absolute; left: 15px; top: 16px; color: #a1ae96; pointer-events: none; }
-.form .input-with-icon input { padding-left: 44px; padding-right: 45px; }
-.password-toggle { position: absolute; right: 4px; top: 4px; height: 42px; width: 40px; border: 0; background: transparent; color: #9eaa94; border-radius: 9px; display: grid; place-items: center; }
-.login-security { display: flex; align-items: center; justify-content: center; gap: 6px; color: #b4bdb0; font-size: 10px; margin-top: 24px; }
-.login-footer { width: min(100%,350px); display: flex; align-items: center; justify-content: space-between; color: #bbc3b6; font-size: 8px; letter-spacing: .12em; margin-top: 10px; }
-.login-footer span { font-size: 10px; letter-spacing: 0; color: #a8b29f; }
-.login-mobile-brand { display: none; }
 .spinner { width: 15px; height: 15px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -243,7 +214,6 @@ input, textarea, select { min-width: 0; }
   .balance-hero { padding: 22px; }
   .quick-card { padding: 17px 14px; }
   .home-lower { grid-template-columns: 1fr; gap: 0; }
-  .login-art { padding-inline: 28px; }
 }
 @media (max-width: 768px) {
   .sidebar, .desktop-role { display: none; }
@@ -321,21 +291,6 @@ input, textarea, select { min-width: 0; }
   .stock-overview p span { font-size: 10px; }
   .stock-overview-icon { width: 60px; height: 60px; border-radius: 20px; }
   .stock-overview-icon svg { width: 29px; height: 29px; }
-  .login-layout { display: block; min-height: 100dvh; background: #f8faf4; }
-  .login-art { display: none; }
-  .login-panel { min-height: 100dvh; padding: max(35px, env(safe-area-inset-top)) 28px 28px; align-items: center; background: radial-gradient(ellipse at 100% 0, #e5f3d8 0, transparent 45%); }
-  .login-form-wrap { padding: 0; margin: auto 0; max-width: 380px; }
-  .login-mobile-brand { display: flex; align-items: center; gap: 10px; margin: 12px 0 58px; font-size: 16px; font-weight: 650; letter-spacing: -.4px; }
-  .login-mobile-brand .brand-mark { width: 39px; height: 39px; border-radius: 13px; }
-  .login-form-wrap .eyebrow { font-size: 9px; }
-  .login-form-wrap h1 { font-size: 43px; margin-top: 15px; letter-spacing: -1.8px; }
-  .login-intro { font-size: 12px; margin-bottom: 33px; }
-  .login-form input:not([type="checkbox"]) { background: #ffffffb0; border-color: #e5ebdf; min-height: 53px; }
-  .login-form .input-with-icon > svg { top: 17px; }
-  .password-toggle { top: 6px; }
-  .login-form .submit-button { min-height: 53px; font-size: 13px; }
-  .login-footer { margin-top: 48px; max-width: 380px; width: 100%; }
-  .login-security { margin-top: 25px; }
 }
 @media (max-width: 360px) {
   .page-content { padding-inline: 15px; }
@@ -402,7 +357,6 @@ input, textarea, select { min-width: 0; }
 
 .brand-logo { overflow: hidden; background: #fff; }
 .brand-logo img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.login-art .brand-logo { background: #fff; }
 
 /* Dropdown bersama untuk seluruh pilihan formulir. */
 .dropdown { position: relative; min-width: 0; display: grid; gap: 8px; }
