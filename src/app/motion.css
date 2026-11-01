@@ -1,0 +1,57 @@
+/* Motion is decorative: values and controls stay usable without animation. */
+.animated-number { display: inline-grid; vertical-align: baseline; font-variant-numeric: tabular-nums; }
+.animated-number > span { grid-area: 1 / 1; }
+.animated-number .number-reserve { visibility: hidden; }
+.chart-totals strong .animated-number, .chart-totals strong .animated-number > span { font: inherit; color: inherit; letter-spacing: inherit; margin: 0; }
+.kpi-cash { position: relative; isolation: isolate; overflow: hidden; }
+.kpi-cash::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(110deg, transparent 25%, #ffffff0c 48%, transparent 70%); }
+
+@media (prefers-reduced-motion: no-preference) {
+  :root { --ease-out: cubic-bezier(.22, 1, .36, 1); }
+  .button, .icon-button, .side-link, .bottom-nav a, .segmented-tabs a, .chart-months button,
+  .dropdown-trigger, .date-trigger, .calendar-day, .dropdown-option, .search-control input {
+    transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 220ms ease, transform 220ms var(--ease-out);
+  }
+  .button:active:not(:disabled), .icon-button:active:not(:disabled), .chart-months button:active { transform: scale(.97); }
+  .page-content { animation: page-arrive 350ms var(--ease-out) both; }
+  .kpi-card, .dashboard-panel, .transaction-card, .summary-card, .module-groups > section {
+    animation: panel-arrive 600ms var(--ease-out) both;
+  }
+  .dashboard-kpis > :nth-child(2), .dashboard-middle > :nth-child(2), .module-groups > :nth-child(2) { animation-delay: 65ms; }
+  .dashboard-kpis > :nth-child(3), .module-groups > :nth-child(3) { animation-delay: 130ms; }
+  .dashboard-bottom > :nth-child(2) { animation-delay: 90ms; }
+  .list-card { animation: panel-arrive 450ms var(--ease-out) both; }
+  .list-card > a, .list-card > .row-button, .dashboard-list > a { transition: background-color 180ms ease; }
+  .kpi-card, a.summary-card { transition: border-color 200ms ease, box-shadow 220ms ease; }
+  .sheet[open] { animation: dialog-arrive 300ms var(--ease-out) both; }
+  .sheet[open]::backdrop { animation: backdrop-arrive 200ms ease both; }
+  .floating-popup:popover-open { animation: popup-arrive 170ms var(--ease-out); }
+  .notice { animation: popup-arrive 250ms var(--ease-out); }
+  .chart-bar-in, .chart-bar-out {
+    transform-box: fill-box; transform-origin: center bottom;
+    animation: bar-grow 800ms var(--ease-out) both;
+    transition: opacity 200ms ease;
+  }
+  .chart-bar-out { animation-delay: 70ms; }
+  .chart-canvas g:nth-of-type(7) rect:not(.chart-hover-zone) { animation-delay: 40ms; }
+  .chart-canvas g:nth-of-type(8) rect:not(.chart-hover-zone) { animation-delay: 80ms; }
+  .chart-canvas g:nth-of-type(9) rect:not(.chart-hover-zone) { animation-delay: 120ms; }
+  .chart-canvas g:nth-of-type(10) rect:not(.chart-hover-zone) { animation-delay: 160ms; }
+  .chart-canvas g:nth-of-type(11) rect:not(.chart-hover-zone) { animation-delay: 200ms; }
+  .chart-hover-zone { transition: fill 180ms ease; }
+  .kpi-cash::after { animation: light-pass 1300ms var(--ease-out) 200ms both; }
+  @keyframes page-arrive { from { opacity: .4; } to { opacity: 1; } }
+  @keyframes panel-arrive { from { opacity: 0; translate: 0 9px; } to { opacity: 1; translate: 0 0; } }
+  @keyframes dialog-arrive { from { opacity: 0; transform: translateY(14px) scale(.99); } to { opacity: 1; transform: none; } }
+  @keyframes backdrop-arrive { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes popup-arrive { from { opacity: 0; translate: 0 4px; } to { opacity: 1; translate: 0 0; } }
+  @keyframes bar-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  @keyframes light-pass { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+}
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .button:hover:not(:disabled), .icon-button:hover:not(:disabled) { transform: translateY(-1px); }
+  a.kpi-card:hover, a.summary-card:hover { box-shadow: 0 6px 18px #203d2b0b; border-color: #a9bfad; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kpi-cash::after { display: none; }
+}

@@ -1,0 +1,23 @@
+# Fondasi tampilan
+
+Fondasi 29 Oktober 2026 dilanjutkan dengan redesain sesuai permintaan pengguna pada 31 Oktober 2026: minimalis, warna profesional, nama pribadi, grafik aktual, dan ikon seperlunya. Persetujuan tampilan akhir tetap dari pengguna.
+
+- Struktur komponen berada di `src/app/globals.css`; tema visual terbaru di `src/app/redesign.css`: hijau tua, permukaan putih, latar netral hangat, angka tabular, dan tombol ringkas.
+- Jangan gunakan emoji/emotikon. Kartu ringkasan, akses cepat, dan baris daftar tanpa ikon dekoratif. Ikon fungsional, navigasi mobile, status, dan keadaan kosong tetap diperbolehkan.
+- Sapaan membaca nama pribadi dari `profiles.full_name`; nama peran generik memakai sapaan netral. Profil pengguna yang sebelumnya bernama Developer sudah diperbarui menjadi Trezar. Avatar inisial dan badge/titik Pengelola dihapus.
+- `AppShell` menyediakan top bar, sidebar desktop, dan navigasi bawah mobile. Tujuan navigasi mengikuti peran serta modul yang sudah tersedia.
+- `Tabs` memisahkan kategori lewat URL. Judul modul hanya di top bar; judul bagian menyebut konteks datanya.
+- `ListRow`, `SectionHeading`, `EmptyState`, dan `Notice` menyatukan tampilan daftar dan status.
+- Tambah/edit data menggunakan `Sheet`: dialog di desktop dan panel bawah di mobile, dengan Escape, pengelolaan fokus native, serta scroll isi.
+- `SubmitButton` menandai permintaan yang sedang berlangsung. Setelah simpan, pengguna kembali ke kategori yang sama; kesalahan tampil dalam panel yang sedang dibuka.
+- Ukuran input mobile 16 px untuk menghindari zoom otomatis. Navigasi memperhitungkan safe area. Animasi mengikuti preferensi reduced motion.
+- Ringkasan harus memakai data asli. Angka gagal dimuat tampil sebagai kegagalan atau tanda kosong, tidak diasumsikan nol.
+- Pemeriksaan browser produksi pada 31 Oktober 2026: desktop 1440 px, tablet 1024 px, mobile 390/320 px, tanpa overflow horizontal atau kesalahan JavaScript/hydration. Screenshot desktop/mobile ditinjau. Grafik, kontrol kalender, dan perubahan periode dengan keyboard lulus; 16 modul juga dimuat dan diperiksa batas layarnya. Akun pengujian sementara dibersihkan.
+
+Modul operasional memakai navigasi Beranda, Penjualan, Pembelian, Keuangan dan Lainnya sesuai peran. `PeriodFilter` menyediakan Tanggal, Bulan, Rentang dan Semua; pilihan valid langsung aktif, pencarian memakai debounce, dan nilai API tetap ISO. Kalender/dropdown memakai top layer melalui `useFloatingPopup`. Detail dan panel transaksi menampilkan status, dokumen asal, pembayaran, retur, koreksi serta bukti. Menu Lainnya dikelompokkan menjadi Operasional, Keuangan & Tim, serta Laporan & Pengaturan.
+
+Dashboard membedakan saldo saat ini dari transaksi periode terpilih. Penjualan bersih dikurangi retur dan dibandingkan dengan periode sebelumnya yang setara; transaksi tempo bukan penerimaan kas. Grafik SVG `CashFlowChart` mengambil arus kas enam bulan terakhir dari RPC berotorisasi yang sudah tersedia, dengan periode tersendiri yang ditampilkan secara eksplisit. Kas masuk/keluar mencakup saldo awal, transfer internal, serta koreksi. Bulan kosong bernilai nol hanya jika permintaan berhasil; kegagalan tampil sebagai pesan. Pemilihan bulan dapat dilakukan lewat mouse, sentuhan, dan keyboard; total rupiah tetap memakai hitungan sen presisi. Angka hanya dikonversi ke Number untuk geometri grafik.
+
+Build produksi, TypeScript, lint, dan tiga pengujian periode/uang lulus setelah redesain. Tidak ada perubahan skema maupun posting transaksi. Perubahan web masih lokal, belum dipublikasikan.
+
+Gerakan antarmuka berada di `src/app/motion.css`: kemunculan kartu bertahap, batang grafik tumbuh, transisi tombol/popup, serta kilau singkat pada kartu saldo. `AnimatedNumber` menggerakkan ringkasan angka saat terlihat, memakai interpolasi integer dan menampilkan nilai akhir presisi tanpa mengubah data. Gerakan mengikuti `prefers-reduced-motion` dan berhenti saat tab tersembunyi. Pemeriksaan browser lulus untuk nilai akhir, perubahan bulan, animasi grafik, pengurangan gerakan, dan lebar mobile tanpa kesalahan JavaScript. Akun uji sementara dibersihkan.

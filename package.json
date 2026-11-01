@@ -1,0 +1,47 @@
+{
+  "name": "ayam-potong",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "node --experimental-strip-types --test scripts/period-money.test.mjs",
+    "test:transactions": "supabase db query --linked --file scripts/test-operations.sql",
+    "test:concurrency": "node scripts/test-concurrency.mjs",
+    "dev:vinext": "vite dev --port 3001",
+    "build:vinext": "vite build",
+    "start:vinext": "vite preview",
+    "deploy:vinext": "vinext-cloudflare deploy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.118.0",
+    "@vinext/cloudflare": "^1.3.0",
+    "next": "^16.4.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-server-dom-webpack": "^19.3.1",
+    "vinext": "^1.4.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^2.0.0-beta.v.8",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "@vitejs/plugin-rsc": "^0.5.38",
+    "cf": "^1.0.0-beta.26",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.3",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.5"
+  },
+  "private": true,
+  "type": "module"
+}
