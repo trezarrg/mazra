@@ -3,11 +3,13 @@ import { login } from "./actions";
 import { PasswordInput } from "@/components/password-input";
 import { SubmitButton } from "@/components/submit-button";
 import { Notice } from "@/components/ui";
+import { ClearNavigation } from "@/components/app-navigation";
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   const message = error === "config" ? "Koneksi belum dikonfigurasi. Hubungi pengelola." : error === "missing" ? "Isi email dan kata sandi." : error ? "Email atau kata sandi tidak sesuai." : null;
   return (
     <main className="login-layout">
+      <ClearNavigation/>
       <section className="login-art" aria-label="Rizki Berkah Abadi Farm">
         <Image className="login-logo" src="/Logo.png" alt="Rizki Berkah Abadi Farm" width={180} height={120} preload/>
         <div className="login-art-copy">
