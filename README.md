@@ -6,7 +6,7 @@ Acuan produk: `PRD_Sistem_Usaha_Ayam_Potong.md`. Progres ada di `task.md`.
 2. Salin `.env.example` menjadi `.env.local`, lalu isi URL dan publishable/anon key proyek Supabase Cloud. Jangan memasukkan service-role key.
 3. Jalankan `npm run dev`.
 
-Login memakai akun Supabase Auth yang dibuat administrator. Pendaftaran publik dinonaktifkan pada proyek demo Supabase. Migrasi di `supabase/migrations`, termasuk HPP rata-rata stok, pengingat tagihan dan pemisahan developer sampai `20261106000100`, telah diterapkan pada proyek demo `vcephhquqtppxuvypeft` dan klien `wgdjtmdomseqhzgatbsk`. Akun developer digunakan untuk akses penuh dan tidak tampil dalam daftar tim operasional. Pengguna tanpa profil aktif tidak memiliki akses ke data melalui RLS. Docker dan Supabase lokal tidak diperlukan.
+Login memakai akun Supabase Auth yang dibuat administrator. Pendaftaran publik dinonaktifkan pada proyek demo Supabase. Migrasi di `supabase/migrations`, termasuk HPP rata-rata stok, pengingat tagihan dan pemisahan developer sampai `20261106000200`, telah diterapkan pada proyek demo `vcephhquqtppxuvypeft` dan klien `wgdjtmdomseqhzgatbsk`. Akun developer digunakan untuk akses penuh dan tidak tampil dalam daftar tim operasional. Pengguna tanpa profil aktif tidak memiliki akses ke data melalui RLS. Docker dan Supabase lokal tidak diperlukan.
 
 Untuk demonstrasi Rizki Farm, nama pengguna `owner` adalah alias sementara untuk akun `owner@example.invalid`; akun lain masuk dengan email. Akun demo memiliki akses Owner ke data usaha dan harus dinonaktifkan setelah demonstrasi. Jangan gunakan alias atau akun demo ini untuk instalasi pelanggan lain.
 
