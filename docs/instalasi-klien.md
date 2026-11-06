@@ -31,7 +31,7 @@ Alias login `owner` dibatasi pada demo atau `DEMO_LOGIN_EMAIL` yang sengaja diis
 2. Pastikan akun Supabase CLI memiliki akses proyek klien. Jalankan `npm run clients:database`. Skrip menghasilkan salinan migrasi di `artifacts/client-release/supabase/migrations`; tautan Supabase utama workspace tidak berubah.
 3. Hubungkan folder itu: `supabase link --project-ref wgdjtmdomseqhzgatbsk --workdir artifacts/client-release`. Gunakan penyimpanan kredensial CLI atau environment rahasia; jangan memasukkan password ke Git.
 4. Tinjau `supabase db push --linked --dry-run --workdir artifacts/client-release`, lalu terapkan `supabase db push --linked --workdir artifacts/client-release` setelah target dipastikan benar. Tidak ada impor transaksi demo dan tidak memakai `--include-seed`.
-5. Melalui Supabase Authentication, nonaktifkan pendaftaran publik dan buat akun pemilik dengan email klien. Jalankan `deployments/bootstrap-owner.sql` di SQL Editor proyek klien sesudah mengganti email dan nama usaha. Skrip berhenti jika proyek sudah mempunyai profil atau transaksi. Tidak membuat developer tersembunyi.
+5. Nonaktifkan signup publik. Jika developer sudah dapat login aplikasi, buka **Data utama → Pengguna → Tambah** untuk membuat akun Owner dengan nama pribadi, email dan password awal. Tidak perlu membuka dashboard Supabase. `deployments/bootstrap-owner.sql` tetap tersedia sebagai alternatif administrator untuk instalasi awal tanpa sesi developer.
 6. Isi alamat/telepon, periksa satuan dan produk awal, lalu tambahkan saldo awal hanya sesuai data klien. Foundation menyediakan katalog produk umum, Pelanggan Umum, Kas Kantor, dan kategori standar; tidak membawa saldo atau transaksi.
 7. Atur Site URL dan redirect URL autentikasi sesuai alamat aplikasi, siapkan backup, lalu periksa login, pembatasan akses, penerimaan, penjualan, pembayaran dan bukti privat pada instalasi baru.
 
@@ -75,3 +75,9 @@ Push perubahan kode ke `main` menjalankan rilis otomatis. Workflow juga dapat di
 Migrasi dilakukan sebelum publikasi aplikasi. Migrasi yang sudah berhasil tidak otomatis di-rollback jika publikasi gagal, sehingga perubahan skema mendatang harus tetap kompatibel dengan aplikasi sebelumnya. Untuk perubahan yang menghapus/mengganti kontrak, lakukan bertahap: tambahkan kontrak baru, rilis semua aplikasi, baru bersihkan kontrak lama pada rilis berikutnya. Pastikan backup tersedia sebelum migrasi produksi.
 
 Menonaktifkan `enabled` hanya mengeluarkan instalasi dari rilis bersama; tidak mematikan Worker dan tidak menghapus datanya. Jangan menjalankan skrip pengujian transaksi demo terhadap database klien.
+
+## Pembuatan akun di aplikasi
+
+Developer dan Owner dapat membuat akun langsung melalui Tim & akses. Formulir membuat akun Auth serta profil/perannya, dengan password awal minimal 10 karakter. Pilihan Developer tidak tersedia. Akun yang emailnya sudah terdaftar tidak diambil alih atau direset passwordnya; tersedia pilihan terpisah untuk menambahkan akses akun yang sudah ada.
+
+Proses administratif berjalan dalam Supabase Edge Function `create-team-user`. Kunci service-role hanya memakai secret bawaan lingkungan Edge Function, tidak dimasukkan ke aplikasi/Worker/browser. Fungsi memverifikasi JWT dengan Auth dan mengecek peran aktif sebelum membuat akun. Jika pemasangan profil gagal, hanya akun Auth baru dari permintaan itu yang dibersihkan; jika pembersihan tidak berhasil, UI meminta pengelola memasang akses pada akun yang sudah dibuat. Pendaftaran publik tetap dinonaktifkan. Fungsi dipasang oleh workflow sebelum aplikasi yang memakainya.

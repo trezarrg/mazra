@@ -10,7 +10,7 @@ Akun pemilik usaha akan dibuat saat pertemuan langsung sesuai permintaan pengelo
 
 ## Urutan pengenalan saat bertemu klien
 
-1. Buat akun owner melalui Supabase Authentication, lalu tetapkan profil owner terpisah menggunakan bootstrap yang sudah disiapkan. Gunakan nama pribadi pemilik agar sapaan aplikasi benar. Periksa login owner pada alamat klien dan pastikan akun developer tidak muncul di Tim & akses.
+1. Login sebagai developer, buka **Lainnya → Data utama → Pengguna → Tambah**, lalu isi nama pribadi pemilik, email, password awal minimal 10 karakter, dan peran Owner. Akun dibuat langsung dari aplikasi dan dapat langsung login. Periksa login owner pada alamat klien dan pastikan akun developer tidak muncul di Tim & akses.
 2. Lengkapi identitas usaha, alamat, telepon, supplier, pelanggan, produk, dan akun kas/bank. Gunakan data usaha yang sebenarnya.
 3. Tentukan tanggal awal pemakaian dan cocokkan stok fisik, saldo kas/bank, hutang, serta piutang awal. Jangan memasukkan pembelian/penjualan lama lagi jika saldo awal sudah mewakilinya.
 4. Peragakan satu penerimaan, pengolahan, penjualan dan pembayaran menggunakan contoh yang disetujui pemilik. Jika memakai data latihan di produksi, batalkan melalui alur koreksi yang sesuai; jangan menghapus baris database.

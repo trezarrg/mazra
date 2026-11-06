@@ -84,6 +84,25 @@ export async function addProfile(data: FormData) {
   if (error) finish(error.message.includes("Akun Auth") ? "Akun Auth terkonfirmasi tidak ditemukan." : error.message.includes("sudah ada") ? "Profil pengguna sudah ada." : "Profil tidak dapat dibuat.");
   finish();
 }
+export async function createAccount(data: FormData) {
+  const finish = (error?: string) => complete(data, error, "pengguna");
+  const { db } = await requireAccess(["developer", "owner"]);
+  const email = text(data, "email", 254).toLowerCase(), name = text(data, "name");
+  const password = String(data.get("password") ?? ""), roles = [...new Set(data.getAll("roles").map(String))];
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name || password.length < 10 || password.length > 128
+    || !roles.length || roles.some(role => !["owner", "admin", "production", "driver"].includes(role))) finish("Isi email, nama, password minimal 10 karakter, dan peran.");
+  const result = await db.functions.invoke("create-team-user", { body: { email, name, password, roles } });
+  if (result.error) {
+    let message = "Akun belum dapat dibuat. Silakan coba kembali.";
+    try {
+      const response = await result.error.context?.json();
+      if (typeof response?.error === "string" && response.error.length <= 250) message = response.error;
+    } catch { /* Respons jaringan tidak selalu berupa JSON. */ }
+    finish(message);
+  }
+  if (!result.data?.ok) finish("Akun belum dapat dibuat. Silakan coba kembali.");
+  finish();
+}
 export async function saveProfile(data: FormData) {
   const finish = (error?: string) => complete(data, error, "pengguna");
   const { db } = await requireAccess(["developer", "owner"]);
