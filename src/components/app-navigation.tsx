@@ -12,6 +12,7 @@ export type Destination = "home" | "stock" | "data" | "purchase" | "sale" | "fin
 type Item = { id: Destination; href: string; label: string; icon: IconName };
 
 let savedRoles: string[] | null = null;
+let savedBrand = branding;
 const listeners = new Set<() => void>();
 function updateRoles(roles: string[] | null) {
   if (JSON.stringify(savedRoles) === JSON.stringify(roles)) return;
@@ -21,9 +22,14 @@ function updateRoles(roles: string[] | null) {
 function subscribe(listener: () => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }
 function getRoles() { return savedRoles; }
 function getServerRoles() { return null; }
+function getBrand() { return savedBrand; }
+function getServerBrand() { return branding; }
 
-export function RememberNavigation({ roles }: { roles: string[] }) {
-  useEffect(() => { updateRoles(roles); }, [roles]);
+export function RememberNavigation({ roles, brand = branding }: { roles: string[]; brand?:typeof branding }) {
+  useEffect(() => {
+    if (savedBrand.name!==brand.name || savedBrand.logo!==brand.logo) { savedBrand=brand; listeners.forEach(listener=>listener()); }
+    updateRoles(roles);
+  }, [roles,brand]);
   return null;
 }
 
@@ -43,13 +49,13 @@ function itemsFor(roles: string[]): Item[] {
   ];
 }
 
-export function Sidebar({ roles, active }: { roles: string[]; active: Destination }) {
+export function Sidebar({ roles, active, brand=branding }: { roles: string[]; active: Destination; brand?:typeof branding }) {
   const selected = active === "stock" || active === "data" ? "more" : active;
   return <aside className="sidebar">
-    <Link href="/" className="sidebar-brand" aria-label="Beranda"><Image src={branding.logo} alt={branding.name} width={150} height={100}/></Link>
+    <Link href="/" className="sidebar-brand" aria-label="Beranda"><Image src={brand.logo} alt={brand.name} width={150} height={100} unoptimized/></Link>
     <span className="nav-label">RUANG KERJA</span>
     <nav aria-label="Navigasi desktop">{itemsFor(roles).map(item => <Link key={item.id} href={item.href} className={`side-link ${selected === item.id ? "is-active" : ""}`} aria-current={selected === item.id ? "page" : undefined}>{item.label}</Link>)}</nav>
-    <div className="sidebar-footer"><div><strong>{branding.name}</strong><small>Operasional usaha</small></div><form action={logout} onSubmit={() => updateRoles(null)}><button className="icon-button" aria-label="Keluar dari akun"><Icon name="logout" size={18}/></button></form></div>
+    <div className="sidebar-footer"><div><strong>{brand.name}</strong><small>Operasional usaha</small></div><form action={logout} onSubmit={() => updateRoles(null)}><button className="icon-button" aria-label="Keluar dari akun"><Icon name="logout" size={18}/></button></form></div>
   </aside>;
 }
 
@@ -68,6 +74,7 @@ function destination(pathname: string): Destination {
 
 export function LoadingNavigation({ pathname, placement }: { pathname: string; placement: "sidebar" | "bottom" }) {
   const roles = useSyncExternalStore(subscribe, getRoles, getServerRoles);
-  if (!roles) return placement === "sidebar" ? <aside className="sidebar"><div className="sidebar-brand"><Image src={branding.logo} alt={branding.name} width={150} height={100}/></div></aside> : null;
-  return placement === "sidebar" ? <Sidebar roles={roles} active={destination(pathname)}/> : <BottomNavigation roles={roles} active={destination(pathname)}/>;
+  const brand = useSyncExternalStore(subscribe,getBrand,getServerBrand);
+  if (!roles) return placement === "sidebar" ? <aside className="sidebar"><div className="sidebar-brand"><Image src={brand.logo} alt={brand.name} width={150} height={100} unoptimized/></div></aside> : null;
+  return placement === "sidebar" ? <Sidebar roles={roles} active={destination(pathname)} brand={brand}/> : <BottomNavigation roles={roles} active={destination(pathname)}/>;
 }

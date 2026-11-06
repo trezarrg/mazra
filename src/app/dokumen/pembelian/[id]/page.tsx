@@ -1,3 +1,4 @@
+import { businessLogoUrl } from "@/lib/business-branding";
 import { randomUUID } from "node:crypto";
 import { Sheet } from "@/components/sheet";
 import { ReceiptCorrectionForm } from "@/components/receipt-correction-form";
@@ -30,7 +31,7 @@ export default async function PurchaseDocument({ params, searchParams }: { param
     db.from("obligations").select("*").eq("source_id", id).eq("kind", "payable").maybeSingle(),
     db.from("payment_records").select("*").eq("source_id", id).eq("kind", "payable").order("created_at"),
     db.from("operation_details").select("id,document_no,operation_date,amount,refund_amount,account_id,note,payload,status").eq("kind", "purchase_return").eq("source_id", id).order("created_at"),
-    db.from("business_settings").select("name,address,phone").eq("id", true).single(),
+    db.from("business_settings").select("name,address,phone,logo_path").eq("id", true).single(),
     db.from("cash_accounts").select("id,name,account_type,active").order("name"),
   ]);
   const reversals = returns.data?.length ? await db.from("operations").select("id,reversed_by").in("id", returns.data.map(rt => rt.id)) : { data: [], error: null };
@@ -48,7 +49,7 @@ export default async function PurchaseDocument({ params, searchParams }: { param
   ].sort((a, b) => a.date.localeCompare(b.date));
   const document: PurchaseDocumentData = {
     id, number: purchaseDocumentNumber(d.document_no, id), doNumber: d.document_no,
-    orderDate: d.purchase_date, receiptDate: r.receipt_date, business: settings.data, supplier: supplier.data,
+    orderDate: d.purchase_date, receiptDate: r.receipt_date, business: {...settings.data,logo:businessLogoUrl(settings.data.logo_path)}, supplier: supplier.data,
     product: d.product_name, origin: d.origin, originWeight: r.origin_weight, actualWeight: r.actual_weight,
     billingQuantity: r.billing_quantity, priceMethod: method, unitPrice: price,
     total: bill.total, credited: bill.credited, paid: bill.paid, balance: bill.balance, dueDate: bill.due_date,

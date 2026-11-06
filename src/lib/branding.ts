@@ -1,4 +1,4 @@
-// Nilai publik dibakukan saat build; setiap instalasi dibangun secara terpisah.
+// Identitas bawaan saat pengaturan usaha belum tersedia.
 const legacyDemo = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://vcephhquqtppxuvypeft.supabase.co";
 export const branding = {
   name: process.env.NEXT_PUBLIC_BUSINESS_NAME || (legacyDemo ? "Rizki Berkah Abadi Farm" : "Usaha Ayam Potong"),

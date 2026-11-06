@@ -3,6 +3,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAccess } from "@/lib/access";
 import { failureReturnPath } from "@/lib/action-feedback";
+import { randomUUID } from "node:crypto";
+import { businessLogoLimit, businessLogoType } from "@/lib/business-logo";
 
 const text = (data: FormData, key: string, max = 200) => String(data.get(key) ?? "").trim().slice(0, max);
 const optional = (data: FormData, key: string, max = 200) => text(data, key, max) || null;
@@ -68,12 +70,28 @@ export async function saveAccount(data: FormData) {
 }
 export async function saveSettings(data: FormData) {
   const finish = (error?: string) => complete(data, error, "usaha");
-  const fail = (error: { message: string } | null) => { if(error) finish("Data tidak dapat disimpan. Periksa isian dan coba lagi."); };
   const { db } = await requireAccess(["developer", "owner"]);
   const name = text(data, "name");
   if (!name) finish("Isi nama usaha.");
-  const { error } = await db.from("business_settings").update({ name, phone: optional(data, "phone", 50), address: optional(data, "address", 1000), updated_at: new Date().toISOString() }).eq("id", true);
-  fail(error); finish();
+  const file = data.get("logo"), remove = data.get("remove_logo") === "1";
+  let uploaded: string | null = null;
+  if (file instanceof File && file.name) {
+    if (remove) finish("Pilih logo baru atau gunakan logo bawaan, bukan keduanya.");
+    if (!file.size || file.size > businessLogoLimit) finish("Pilih logo PNG, JPG, atau WebP maksimal 2 MB.");
+    const bytes = new Uint8Array(await file.arrayBuffer()), detected = businessLogoType(bytes);
+    if (!detected) finish("File logo harus berupa gambar PNG, JPG, atau WebP yang valid.");
+    uploaded = `logos/${randomUUID()}.${detected!.extension}`;
+    const result = await db.storage.from("business-branding").upload(uploaded, bytes, { contentType:detected!.type, upsert:false, cacheControl:"31536000" });
+    if (result.error) finish("Logo belum dapat diunggah. Silakan coba kembali.");
+  }
+  const result = await db.rpc("save_business_settings", { p_name:name,p_phone:optional(data,"phone",50),p_address:optional(data,"address",1000),p_logo_path:uploaded,p_replace_logo:!!uploaded||remove });
+  if (result.error) {
+    if (uploaded) await db.storage.from("business-branding").remove([uploaded]);
+    finish("Pengaturan belum dapat disimpan. Silakan coba kembali.");
+  }
+  if ((uploaded||remove) && result.data && result.data!==uploaded) await db.storage.from("business-branding").remove([result.data]);
+  revalidatePath("/", "layout");
+  finish();
 }
 export async function addProfile(data: FormData) {
   const finish = (error?: string) => complete(data, error, "pengguna");

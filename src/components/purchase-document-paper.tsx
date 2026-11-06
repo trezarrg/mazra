@@ -12,7 +12,7 @@ export function PurchaseDocumentPaper({ data: d }: { data: PurchaseDocumentData 
   const hasReturns = Number(d.credited) > 0;
   return <article className="purchase-paper" aria-label={`Bukti pembelian ${d.number}`}>
     <header className="paper-header">
-      <div className="paper-business"><Image src={branding.logo} width={96} height={64} alt="" unoptimized priority/><div><strong>{d.business.name}</strong>{d.business.address && <p>{d.business.address}</p>}{d.business.phone && <p>Tel. {d.business.phone}</p>}</div></div>
+      <div className="paper-business"><Image src={d.business.logo??branding.logo} width={96} height={64} alt="" unoptimized priority/><div><strong>{d.business.name}</strong>{d.business.address && <p>{d.business.address}</p>}{d.business.phone && <p>Tel. {d.business.phone}</p>}</div></div>
       <div className="paper-heading"><p className="paper-kicker">Bukti pembelian</p><h2>Penerimaan & pembayaran</h2><p className="paper-number">{d.number}</p><span className={`paper-status ${d.cancelled?"is-cancelled":settled ? "is-settled" : "is-outstanding"}`}>{purchaseDocumentStatus(d)}</span></div>
     </header>
 

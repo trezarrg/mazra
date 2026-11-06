@@ -1,6 +1,6 @@
 import { cents, fromCents } from "./money";
 
-export type DocumentParty = { name: string; address: string | null; phone: string | null };
+export type DocumentParty = { name: string; address: string | null; phone: string | null; logo?:string };
 export type DocumentPayment = { id: string; date: string; account: string; amount: string; note: string | null; kind: "payment" | "refund" };
 export type PurchaseDocumentData = {
   id: string; number: string; doNumber: number; orderDate: string; receiptDate: string;

@@ -606,3 +606,6 @@ a.kpi-card:hover { border-color: #a9bfad; box-shadow: 0 3px 12px #20352d09; }
 .transaction-history dl > div { display:flex; justify-content:space-between; gap:14px; padding-block:5px; }
 .transaction-history dd { margin:0; text-align:right; overflow-wrap:anywhere; }
 .paper-status.is-cancelled { color:#755b50; background:#f1ebe6; border-color:#dacbc0; }
+.business-logo-field { margin-bottom:0; padding-bottom:16px; }
+.business-logo-field > div { flex:1; min-width:0; }
+.business-logo-field input[type="file"] { max-width:100%; font-size:12px; }

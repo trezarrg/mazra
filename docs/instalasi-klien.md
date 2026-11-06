@@ -21,7 +21,9 @@ Untuk instalasi berikutnya yang memerlukan developer, buat akun Auth terpisah da
 
 ## Identitas usaha
 
-Nama dan logo tampilan login/navigasi dibakukan saat build melalui `NEXT_PUBLIC_BUSINESS_NAME` dan `NEXT_PUBLIC_BUSINESS_LOGO`. Workflow mengisinya dari daftar instalasi. Gunakan berkas logo dalam `public/`; instalasi baru mendapat logo netral jika tidak ditentukan. Nama, alamat, dan telepon pada dokumen transaksi berasal dari Data master > Identitas usaha pada database masing-masing. Isi identitas itu saat pemasangan awal.
+Nama dan logo usaha mengikuti pengaturan database masing-masing. Owner/developer membuka **Data utama & pengaturan → Usaha**, memilih PNG/JPG/WebP maksimal 2 MB, lalu menyimpan. Pratinjau tersedia sebelum disimpan. Tombol **Logo bawaan** menghapus pilihan logo khusus. Logo dipakai pada halaman masuk, navigasi, serta dokumen pembelian dan ekspornya; tidak perlu build ulang. Perubahan logo di demo tidak disalin ke klien.
+
+Logo disimpan di bucket publik `business-branding`, dengan referensi `business_settings.logo_path`. Upload hanya diizinkan untuk owner/developer, diperiksa ukuran dan jenis berkasnya di server, serta memakai nama objek baru agar cache tidak menampilkan logo lama. Penyimpanan identitas dan referensi logo berlangsung dalam satu RPC dengan penguncian baris; logo aktif dilindungi dari penghapusan. RPC publik hanya mengembalikan nama dan referensi logo, bukan telepon/alamat/data usaha lainnya. Variabel `NEXT_PUBLIC_BUSINESS_NAME` dan `NEXT_PUBLIC_BUSINESS_LOGO` tetap menjadi identitas bawaan saat pengaturan tidak tersedia.
 
 Alias login `owner` dibatasi pada demo atau `DEMO_LOGIN_EMAIL` yang sengaja diisi. Klien memakai email akun sendiri. Jangan menyalin akun atau kata sandi demo.
 
