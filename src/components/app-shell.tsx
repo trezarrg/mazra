@@ -2,10 +2,12 @@ import { getBusinessBranding } from "@/lib/business-branding";
 import { logout } from "@/app/actions";
 import { Icon } from "./icon";
 import { BottomNavigation, RememberNavigation, Sidebar, type Destination } from "./app-navigation";
+import { SessionKeeper } from "./session-keeper";
 
 export async function AppShell({ title, active, role, roles = [role], children, action }: { title: string; active: Destination; role: string; roles?: string[]; children: React.ReactNode; action?: React.ReactNode }) {
   const branding = await getBusinessBranding();
   return <div className="app-layout">
+    <SessionKeeper/>
     <RememberNavigation roles={roles} brand={branding}/>
     <a className="skip-link" href="#main-content">Lewati ke konten</a>
     <Sidebar roles={roles} active={active} brand={branding}/>

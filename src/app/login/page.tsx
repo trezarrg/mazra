@@ -2,10 +2,22 @@ import { getBusinessBranding } from "@/lib/business-branding";
 import Image from "next/image";
 import { LoginForm } from "@/components/login-form";
 import { ClearNavigation } from "@/components/app-navigation";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { InstallAppButton } from "@/components/pwa-provider";
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const branding = await getBusinessBranding();
   const { error } = await searchParams;
-  const initialError = error === "config" ? "config" : error === "missing" ? "missing" : error ? "invalid" : null;
+  let signedIn=false;
+  if(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+    try {
+      const db=await createClient();
+      const {data:{user}}=await db.auth.getUser();
+      if(user){const profile=await db.from("profiles").select("active").eq("id",user.id).maybeSingle();signedIn=profile.data?.active===true;}
+    } catch { /* Formulir tetap tersedia ketika layanan masuk sedang bermasalah. */ }
+  }
+  if(signedIn) redirect("/");
+  const initialError = error === "config" ? "config" : error === "missing" ? "missing" : error === "access" ? "access" : error ? "invalid" : null;
   return (
     <main className="login-layout">
       <ClearNavigation/>
@@ -28,6 +40,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
           </header>
           <LoginForm initialError={initialError}/>
           <p className="login-security">Akses khusus tim usaha</p>
+          <InstallAppButton/>
         </div>
         <footer className="login-credit">© 2026 <strong>TrezarRG</strong></footer>
       </section>

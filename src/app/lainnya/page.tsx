@@ -3,6 +3,7 @@ import { requireAccess } from "@/lib/access";
 import { officeRoles } from "@/lib/operations";
 import { AppShell } from "@/components/app-shell";
 import { ListRow } from "@/components/ui";
+import { InstallAppButton } from "@/components/pwa-provider";
 
 export default async function Page() {
   const { role, roles } = await requireAccess();
@@ -26,5 +27,5 @@ export default async function Page() {
       { href: "/data", label: "Data utama & pengaturan", detail: "Mitra, produk, akun, dan akses tim", show: office },
     ] },
   ];
-  return <AppShell title="Lainnya" active="more" role={role} roles={roles}><div className="module-groups">{groups.filter(group => group.items.some(item => item.show)).map(group => <section key={group.title}><h2>{group.title}</h2><div className="list-card">{group.items.filter(item => item.show).map(item => <Link href={item.href} key={item.href}><ListRow title={item.label} subtitle={item.detail}/></Link>)}</div></section>)}</div></AppShell>;
+  return <AppShell title="Lainnya" active="more" role={role} roles={roles} action={<InstallAppButton/>}><div className="module-groups">{groups.filter(group => group.items.some(item => item.show)).map(group => <section key={group.title}><h2>{group.title}</h2><div className="list-card">{group.items.filter(item => item.show).map(item => <Link href={item.href} key={item.href}><ListRow title={item.label} subtitle={item.detail}/></Link>)}</div></section>)}</div></AppShell>;
 }

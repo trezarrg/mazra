@@ -609,3 +609,6 @@ a.kpi-card:hover { border-color: #a9bfad; box-shadow: 0 3px 12px #20352d09; }
 .business-logo-field { margin-bottom:0; padding-bottom:16px; }
 .business-logo-field > div { flex:1; min-width:0; }
 .business-logo-field input[type="file"] { max-width:100%; font-size:12px; }
+.connection-message { max-width:440px; margin:12vh auto; padding:28px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+.connection-message h1 { font-size:23px; }
+.connection-message p { color:var(--muted); }

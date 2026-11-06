@@ -1,7 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-export type LoginState = { error: "missing" | "config" | "invalid" | "unavailable" | null };
+export type LoginState = { error: "missing" | "config" | "invalid" | "unavailable" | "access" | null };
 
 export async function login(_previous: LoginState, formData: FormData): Promise<LoginState> {
   const identifier = String(formData.get("email") ?? "").trim();

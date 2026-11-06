@@ -10,6 +10,7 @@ const messages: Record<Exclude<LoginState["error"], null>, string> = {
   invalid: "Email, nama pengguna, atau kata sandi salah.",
   config: "Koneksi belum dikonfigurasi. Hubungi pengelola.",
   unavailable: "Tidak dapat masuk saat ini. Periksa koneksi dan coba lagi.",
+  access: "Akun belum memiliki akses aktif. Hubungi pengelola.",
 };
 
 export function LoginForm({ initialError }: { initialError: LoginState["error"] }) {

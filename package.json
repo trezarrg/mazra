@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "predev": "node scripts/generate-pwa-icons.mjs",
     "dev": "next dev",
     "dev:client": "node scripts/dev-client.mjs",
+    "prebuild": "node scripts/generate-pwa-icons.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -16,6 +18,7 @@
     "test:transactions": "supabase db query --linked --file scripts/test-operations.sql",
     "test:concurrency": "node scripts/test-concurrency.mjs",
     "dev:vinext": "vite dev --port 3001",
+    "prebuild:vinext": "node scripts/generate-pwa-icons.mjs",
     "build:vinext": "vite build",
     "start:vinext": "vite preview",
     "deploy:vinext": "vinext-cloudflare deploy"
@@ -44,6 +47,7 @@
     "cf": "^1.0.0-beta.26",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.3",
+    "sharp": "^0.35.5",
     "typescript": "^6.0.3",
     "vite": "^8.3.5"
   },

@@ -14,6 +14,8 @@ Aplikasi mencakup DO/penerimaan, timbang lapangan, hasil potong, stok kg, penjua
 
 Alur penggunaan, pengujian, backup/restore, dan prasyarat sebelum produksi ada di [docs/operasional.md](docs/operasional.md). Status implementasi dan pekerjaan sebelum go-live ada di [task.md](task.md).
 
+Login dipertahankan per browser/perangkat dengan pembaruan token otomatis. Aplikasi dapat dipasang dari **Pasang aplikasi** di halaman masuk atau menu Lainnya. Pencatatan transaksi tetap online; panduan ada di [sesi dan pemasangan](docs/sesi-dan-pemasangan.md).
+
 ## Cloudflare Workers
 
 Aplikasi disiapkan untuk Workers menggunakan vinext. Gunakan Node.js 24.22 atau lebih baru dalam lini 24, lalu jalankan `npm ci`. Untuk deploy dari komputer, isi `.env.local` dengan dua nilai Supabase yang sama seperti di atas, masuk dengan `npx cf auth login`, lalu jalankan `npm run deploy:vinext`. Perintah ini membangun dan menerbitkan Worker bernama `mazra` pada akun Cloudflare yang dipilih.

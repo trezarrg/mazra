@@ -14,3 +14,4 @@ supabase/.temp/
 /artifacts/handoff/
 /artifacts/client-access/
 /artifacts/
+/public/icons/*.png
