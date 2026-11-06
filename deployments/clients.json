@@ -1,0 +1,27 @@
+{
+  "clients": [
+    {
+      "id": "demo",
+      "channel": "demo",
+      "enabled": true,
+      "environment": "demo",
+      "worker": "mazra",
+      "projectRef": "vcephhquqtppxuvypeft",
+      "businessName": "Rizki Berkah Abadi Farm",
+      "logo": "/Logo.png",
+      "url": "https://mazra.trezarrg.workers.dev"
+    },
+    {
+      "id": "rizki-berkah-abadi",
+      "channel": "production",
+      "enabled": true,
+      "environment": "rizki-berkah-abadi",
+      "worker": "rizki-berkah-abadi",
+      "pagesProject": "rizkiberkahabadi",
+      "projectRef": "wgdjtmdomseqhzgatbsk",
+      "businessName": "Rizki Berkah Abadi Farm",
+      "logo": "/Logo.png",
+      "url": "https://rizkiberkahabadi.pages.dev"
+    }
+  ]
+}

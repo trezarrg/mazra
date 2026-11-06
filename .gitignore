@@ -9,3 +9,8 @@ supabase/.temp/
 .cloudflare/
 /.agents/
 /skills-lock.json
+/artifacts/purchase-document/
+/artifacts/client-release/
+/artifacts/handoff/
+/artifacts/client-access/
+/artifacts/

@@ -1,0 +1,59 @@
+name: Rilis aplikasi klien
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - README.md
+      - AGENTS.md
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Rilis demo saja atau demo lalu seluruh klien
+        type: choice
+        options: [all, demo]
+        default: all
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: client-release
+  cancel-in-progress: false
+jobs:
+  targets:
+    runs-on: ubuntu-latest
+    outputs:
+      demo: ${{ steps.targets.outputs.demo }}
+      production: ${{ steps.targets.outputs.production }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: targets
+        run: |
+          echo "demo=$(node scripts/prepare-client.mjs matrix demo)" >> "$GITHUB_OUTPUT"
+          echo "production=$(node scripts/prepare-client.mjs matrix production)" >> "$GITHUB_OUTPUT"
+  demo:
+    needs: targets
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix: ${{ fromJSON(needs.targets.outputs.demo) }}
+    uses: ./.github/workflows/deploy-client.yml
+    with:
+      client_id: ${{ matrix.id }}
+      environment: ${{ matrix.environment }}
+    secrets: inherit
+  production:
+    needs: [targets, demo]
+    if: github.event_name == 'push' || inputs.channel == 'all'
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix: ${{ fromJSON(needs.targets.outputs.production) }}
+    uses: ./.github/workflows/deploy-client.yml
+    with:
+      client_id: ${{ matrix.id }}
+      environment: ${{ matrix.environment }}
+    secrets: inherit

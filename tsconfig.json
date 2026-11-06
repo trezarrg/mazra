@@ -33,7 +33,10 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    ".next/clients/**/types/**/*.ts",
+    ".next/clients/rizki-berkah-abadi/types/**/*.ts",
+    ".next/clients/rizki-berkah-abadi/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

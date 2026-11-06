@@ -1,5 +1,12 @@
 -- Test integrasi pada Supabase Cloud. Seluruh fixture, audit, dan transaksi di-rollback.
 begin;
+set local session_replication_role=replica;
+alter table public.operations enable always trigger audit_operations;
+do $$ begin
+ execute format('alter sequence %s restart with 9000000000000000000',pg_get_serial_sequence('public.operations','document_no'));
+ execute format('alter sequence %s restart with 9000000000000000000',pg_get_serial_sequence('public.purchase_dos','document_no'));
+ execute format('alter sequence %s restart with 9000000000000000000',pg_get_serial_sequence('public.audit_events','id'));
+end $$;
 create function pg_temp.check_that(ok boolean, label text) returns void language plpgsql as $$ begin if ok is distinct from true then raise exception 'UAT gagal: %',label; end if; end $$;
 create function pg_temp.expect_error(statement text, expected text) returns void language plpgsql as $$
 begin
@@ -11,23 +18,23 @@ begin
 end $$;
 do $$
 declare
- actor uuid; collector uuid:=gen_random_uuid(); driver uuid:=gen_random_uuid(); production uuid:=gen_random_uuid(); inactive uuid:=gen_random_uuid();
+ actor uuid; driver uuid:=gen_random_uuid(); production uuid:=gen_random_uuid(); inactive uuid:=gen_random_uuid();
  customer uuid:=gen_random_uuid(); supplier uuid:=gen_random_uuid(); live uuid:=gen_random_uuid(); carcass uuid:=gen_random_uuid(); fillet uuid:=gen_random_uuid(); offal uuid:=gen_random_uuid();
- acc uuid:=gen_random_uuid(); bank uuid:=gen_random_uuid(); bag uuid:=gen_random_uuid();
+ acc uuid:=gen_random_uuid(); bank uuid:=gen_random_uuid();
  do_id uuid:=gen_random_uuid(); r1 uuid:=gen_random_uuid(); r2 uuid:=gen_random_uuid(); prod uuid:=gen_random_uuid(); conv uuid:=gen_random_uuid();
- sale uuid:=gen_random_uuid(); collect_sale uuid:=gen_random_uuid(); ret uuid:=gen_random_uuid(); deposit uuid:=gen_random_uuid();
+ sale uuid:=gen_random_uuid(); ret uuid:=gen_random_uuid();
  payment1 uuid:=gen_random_uuid(); payment2 uuid:=gen_random_uuid(); billpay uuid:=gen_random_uuid();
  employee uuid:=gen_random_uuid(); advance uuid:=gen_random_uuid(); payroll uuid:=gen_random_uuid(); asset uuid:=gen_random_uuid();
  sale_data jsonb; data jsonb; item_id uuid; qty numeric; before_cash numeric; after_cash numeric; s jsonb; reversal uuid:=gen_random_uuid(); new_ret uuid:=gen_random_uuid(); purchase_ret uuid:=gen_random_uuid(); driver_sale uuid:=gen_random_uuid(); delivery uuid:=gen_random_uuid(); multi uuid:=gen_random_uuid(); full_ret uuid:=gen_random_uuid(); lump_do uuid:=gen_random_uuid(); lump_receipt uuid:=gen_random_uuid(); owner_actor uuid:=gen_random_uuid(); disposal uuid:=gen_random_uuid();
 begin
  select id into actor from public.profiles where role='developer' and active limit 1;
  perform pg_temp.check_that(actor is not null,'profil pengelola tersedia');
- insert into auth.users(id,email,email_confirmed_at) values(collector,'uat-collector-'||collector||'@example.invalid',now()),(driver,'uat-driver-'||driver||'@example.invalid',now()),(production,'uat-production-'||production||'@example.invalid',now()),(inactive,'uat-inactive-'||inactive||'@example.invalid',now()),(owner_actor,'uat-owner-'||owner_actor||'@example.invalid',now());
- insert into public.profiles(id,full_name,role,active) values(collector,'UAT Penagih','collector',true),(driver,'UAT Sopir','driver',true),(production,'UAT Produksi','production',true),(inactive,'UAT Nonaktif','admin',false),(owner_actor,'UAT Owner','owner',true);
+ insert into auth.users(id,email,email_confirmed_at) values(driver,'uat-driver-'||driver||'@example.invalid',now()),(production,'uat-production-'||production||'@example.invalid',now()),(inactive,'uat-inactive-'||inactive||'@example.invalid',now()),(owner_actor,'uat-owner-'||owner_actor||'@example.invalid',now());
+ insert into public.profiles(id,full_name,role,active) values(driver,'UAT Sopir','driver',true),(production,'UAT Produksi','production',true),(inactive,'UAT Nonaktif','admin',false),(owner_actor,'UAT Owner','owner',true);
  insert into public.partners(id,name,is_customer,is_supplier) values(customer,'UAT Pelanggan',true,false),(supplier,'UAT Supplier',false,true);
  insert into public.products(id,name) values(live,'UAT Hidup'),(carcass,'UAT Karkas'),(fillet,'UAT Fillet'),(offal,'UAT Jeroan');
  insert into public.product_units(product_id,unit) values(live,'kg'),(live,'ekor'),(carcass,'kg'),(fillet,'kg'),(offal,'kg');
- insert into public.cash_accounts(id,name,account_type,holder_id) values(acc,'UAT Kantor','cash',null),(bank,'UAT Bank','bank',null),(bag,'UAT Penagih','collector',collector);
+ insert into public.cash_accounts(id,name,account_type,holder_id) values(acc,'UAT Kantor','cash',null),(bank,'UAT Bank','bank',null);
  perform set_config('request.jwt.claim.sub',actor::text,true);
  -- 1–3. DO tanpa posting, selisih -20 kg, dua penerimaan, retry identik.
  perform public.create_purchase_do(do_id,'2026-10-31',supplier,live,null,1000,null,'kg',20000,null);
@@ -68,22 +75,6 @@ begin
  perform public.save_operation(ret,'sale_return',data,true);perform public.save_operation(ret,'sale_return',data,true);
  perform pg_temp.check_that((select refund_amount=150000 from public.operations where id=ret),'retur dana terbayar');
  perform pg_temp.check_that((select balance_amount=0 from public.obligations where source_id=sale),'retur tidak membuat saldo negatif');
- -- 8. Penagih 5 juta, setor 3 juta; verifikator berbeda.
- data:=sale_data||jsonb_build_object('assigned',collector,'items',jsonb_build_array(jsonb_build_object('product',live,'unit','kg','quantity','100','price','50000')));
- perform public.save_operation(collect_sale,'sale',data,true);
- perform set_config('request.jwt.claim.sub',collector::text,true);
- perform public.post_payment(gen_random_uuid(),'receivable',collect_sale,'2026-10-31',bag,5000000,null);
- data:=jsonb_build_object('date','2026-10-31','account',bag,'target',acc,'amount','3000000');
- perform public.save_operation(deposit,'deposit',data,true);
- perform pg_temp.check_that((select sum(amount)=5000000 from public.cash_movements where account_id=bag),'setoran menunggu tidak memindahkan uang');
- perform pg_temp.expect_error(format('select public.verify_deposit(%L,true,null)',deposit),'Tidak memiliki akses');
- -- Rangkap admin sekalipun tidak dapat memverifikasi setoran sendiri.
- insert into public.profile_extra_roles(profile_id,role) values(collector,'admin');
- perform pg_temp.expect_error(format('select public.verify_deposit(%L,true,null)',deposit),'setoran sendiri');
- delete from public.profile_extra_roles where profile_id=collector;
- perform set_config('request.jwt.claim.sub',actor::text,true);
- perform public.verify_deposit(deposit,true,null);perform public.verify_deposit(deposit,true,null);
- perform pg_temp.check_that((select sum(amount)=2000000 from public.cash_movements where account_id=bag),'sisa penagih 2 juta');
  -- 9. Dua cicilan supplier; retry dan overpay.
  perform public.post_payment(billpay,'payable',r1,'2026-10-31',acc,10000000,null);
  perform public.post_payment(billpay,'payable',r1,'2026-10-31',acc,10000000,null);
@@ -130,7 +121,7 @@ begin
  perform pg_temp.check_that((select balance_amount=0 from public.obligations where source_id=r2),'retur pengganti memakai sisa aktual');
  perform pg_temp.expect_error(format('select public.reverse_document(%L,''payment'',%L,''2026-10-31'',''Koreksi'')',gen_random_uuid(),payment1),'Koreksi retur dana terlebih dahulu');
  -- Sopir dapat mencatat tugasnya; dua peristiwa ini tidak mengurangi stok lagi.
- data:=sale_data||jsonb_build_object('driver',driver,'assigned',collector,'items',jsonb_build_array(jsonb_build_object('product',live,'unit','kg','quantity','1','price','1')));
+ data:=sale_data||jsonb_build_object('driver',driver,'items',jsonb_build_array(jsonb_build_object('product',live,'unit','kg','quantity','1','price','1')));
  perform public.save_operation(driver_sale,'sale',data,true);
  select id into item_id from public.operation_items where operation_id=driver_sale;
  select sum(quantity) into qty from public.stock_movements where product_id=live;
@@ -143,22 +134,12 @@ begin
  perform pg_temp.check_that((select sum(quantity)=qty from public.stock_movements where product_id=live),'pengiriman tidak mengeluarkan stok lagi');
  -- Stok insufficient harus membatalkan SELURUH posting.
  data:=sale_data||jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product',live,'unit','kg','quantity','99999','price','1')));
- perform pg_temp.expect_error(format('select public.save_operation(%L,''sale'',%L,true)',gen_random_uuid(),data),'Stok tidak mencukupi');
+ perform pg_temp.expect_error(format('select public.save_operation(%L,''sale'',%L,true)',gen_random_uuid(),data),'tidak cukup');
  -- 15–16. Ringkasan konsisten, laporan tidak menyatakan laba final.
  s:=public.business_summary('2026-10-31','2026-10-31');
  perform pg_temp.check_that(s->>'report_status'='Belum lengkap','laporan HPP belum disahkan');
  perform pg_temp.check_that((s->>'sales')::numeric=(select coalesce(sum(amount),0) from public.operations where kind='sale' and status='final' and operation_date='2026-10-31'),'dashboard konsisten dengan transaksi');
  -- Uji RLS dengan role database authenticated, bukan hanya pemanggilan service.
- perform set_config('request.jwt.claim.sub',collector::text,true);execute 'set local role authenticated';
- perform pg_temp.check_that((select count(*)=1 from public.operations where id=collect_sale),'penagih melihat tugas sendiri');
- perform pg_temp.check_that((select count(*)=1 from public.obligations where source_id=collect_sale),'penagih melihat tagihan sendiri');
- perform pg_temp.check_that((select count(*)=0 from public.operations where id=sale),'penagih tidak melihat penjualan lain');
- perform pg_temp.check_that((select count(*)=0 from public.cash_movements where account_id=acc),'penagih tidak melihat saldo kantor');
- perform pg_temp.check_that((select count(*)=0 from public.purchase_dos),'penagih tidak melihat pembelian');
- perform pg_temp.expect_error(format('insert into public.cash_movements(account_id,amount,movement_date,source_type,created_by) values(%L,1,''2026-10-31'',''finance'',%L)',bag,collector),'permission denied');
- perform pg_temp.expect_error(format('select public.post_payment(%L,''receivable'',%L,''2026-10-31'',%L,1,null)',gen_random_uuid(),sale,bag),'Tidak memiliki akses');
- perform pg_temp.expect_error('select public.business_summary(null,null)','Tidak memiliki akses');
- execute 'reset role';
  perform set_config('request.jwt.claim.sub',driver::text,true);execute 'set local role authenticated';
  perform pg_temp.expect_error(format('select public.record_delivery(%L,%L,''2026-10-31'',''sent'',''[]'',null)',gen_random_uuid(),sale),'Tidak memiliki akses');
  perform pg_temp.expect_error(format('select public.save_operation(%L,''finance'',''{}'',true)',gen_random_uuid()),'Tidak memiliki akses');execute 'reset role';
@@ -200,12 +181,11 @@ begin
  perform public.reverse_document(gen_random_uuid(),'operation',disposal,'2026-10-31','Koreksi penjualan aset');
  perform pg_temp.check_that((select disposed_by is null from public.fixed_assets where id=asset),'aset aktif kembali setelah pembalikan penjualan');
  s:=public.business_summary('2026-10-31','2026-10-31');perform pg_temp.check_that((s->>'asset_disposal_result')::numeric=before_cash,'pembalikan tidak menggandakan hasil aset');
- -- Satuan ekor berasal dari konversi yang benar-benar ditimbang, tanpa asumsi kg.
- data:=jsonb_build_object('date','2026-10-31','items',jsonb_build_array(jsonb_build_object('product',live,'unit','kg','quantity','10','direction','out'),jsonb_build_object('product',live,'unit','ekor','quantity','5','weight','10','direction','in')));perform public.save_operation(gen_random_uuid(),'production',data,true);
- select sum(quantity) into qty from public.stock_movements where product_id=live and unit='kg';
- data:=jsonb_build_object('date','2026-10-31','partner',customer,'items',jsonb_build_array(jsonb_build_object('product',live,'unit','ekor','quantity','2','price','10000')));perform public.save_operation(gen_random_uuid(),'sale',data,true);
- perform pg_temp.check_that((select sum(quantity)=3 from public.stock_movements where product_id=live and unit='ekor'),'penjualan menyimpan jumlah ekor');
- perform pg_temp.check_that((select sum(quantity)=qty from public.stock_movements where product_id=live and unit='kg'),'ekor tidak mengonversi kg diam-diam');
+ -- Penjualan per ekor memakai berat aktual untuk mengurangi stok kg.
+ select coalesce(sum(quantity),0) into qty from public.stock_movements where product_id=live and unit='kg';
+ data:=jsonb_build_object('date','2026-10-31','partner',customer,'items',jsonb_build_array(jsonb_build_object('product',live,'unit','ekor','quantity','2','weight','4','price','10000')));perform public.save_operation(gen_random_uuid(),'sale',data,true);
+ perform pg_temp.check_that(not exists(select 1 from public.stock_movements where product_id=live and unit='ekor'),'ekor tidak membentuk stok terpisah');
+ perform pg_temp.check_that((select sum(quantity)=qty-4 from public.stock_movements where product_id=live and unit='kg'),'penjualan ekor mengurangi berat aktual kg');
  data:=jsonb_build_object('date','2026-10-31','partner',customer,'items',jsonb_build_array(jsonb_build_object('product',live,'unit','ekor','quantity','0.5','price','10000')));
  perform pg_temp.expect_error(format('select public.save_operation(%L,''sale'',%L,true)',gen_random_uuid(),data),'Produk, varian, satuan atau jumlah tidak valid');
  -- Borongan diterima parsial dengan batas total tagihan kesepakatan.

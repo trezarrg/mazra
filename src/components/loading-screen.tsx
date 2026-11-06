@@ -8,22 +8,21 @@ type Layout = "dashboard" | "list" | "groups" | "detail" | "analysis" | "people"
 type Module = { title: string; layout: Layout; tabs?: number; filters?: number; search?: boolean; actions?: number; add?: boolean; monthly?: boolean; all?: boolean };
 
 const modules: Record<string, Module> = {
-  "/": { title: "Beranda", layout: "dashboard" },
+  "/": { title: "Beranda", layout: "dashboard", monthly:true },
   "/login": { title: "Masuk", layout: "login" },
   "/penjualan": { title: "Penjualan", layout: "list", filters: 2, search: true, add: true },
   "/pembelian": { title: "Pembelian", layout: "list", filters: 1, search: true, add: true },
   "/keuangan": { title: "Buku keuangan", layout: "list", filters: 3, search: true, actions: 3 },
   "/lainnya": { title: "Lainnya", layout: "groups" },
   "/dokumen": { title: "Dokumen operasional", layout: "list", filters: 2, search: true },
-  "/penerimaan": { title: "Timbang penerimaan", layout: "list", filters: 0, add: true },
-  "/produksi": { title: "Produksi", layout: "list", filters: 1, search: true, add: true },
-  "/stok": { title: "Produk & stok", layout: "list", tabs: 2, actions: 2 },
+  "/penerimaan": { title: "Timbang penerimaan", layout: "list", filters: 1 },
+  "/produksi": { title: "Hasil potong", layout: "list", filters: 1, search: true, add: true },
+  "/stok": { title: "Stok", layout: "list" },
   "/riwayat": { title: "Riwayat", layout: "list", tabs: 2, filters: 2, search: true },
   "/tagihan": { title: "Piutang & hutang", layout: "list", tabs: 2, filters: 1, search: true, all: true },
-  "/setoran": { title: "Setoran penagih", layout: "list", filters: 1, search: true, add: true },
   "/sdm": { title: "SDM", layout: "people", actions: 3, add: true },
   "/aset": { title: "Aset tetap", layout: "list", add: true },
-  "/akuntansi": { title: "Akuntansi", layout: "list", tabs: 3, filters: 0, monthly: true },
+  "/akuntansi": { title: "Akuntansi", layout: "list", tabs: 4, filters: 0, monthly: true },
   "/analisis": { title: "Analisis usaha", layout: "analysis", filters: 0, monthly: true },
   "/data": { title: "Data utama", layout: "settings", tabs: 5, add: true },
 };
@@ -41,7 +40,7 @@ function Actions({ count }: { count: number }) {
 }
 
 function Filters({ count, search, mode }: { count: number; search?: boolean; mode: string }) {
-  const dates = mode === "all" ? 1 : mode === "date" ? 2 : 3;
+  const dates = mode === "none" ? 0 : mode === "all" ? 1 : mode === "date" ? 2 : 3;
   return <div className="loading-filters">{Array.from({length:dates+count},(_,i)=><div className="loading-filter" key={i}><Block className="loading-label"/><Block className="loading-control"/></div>)}{search&&<div className="loading-filter loading-search"><Block className="loading-label"/><Block className="loading-control"/></div>}</div>;
 }
 
@@ -55,11 +54,11 @@ function Content({ config, pathname, mode, tab }: { config: Module; pathname: st
   if(config.layout === "detail") return <><div className="loading-detail"><Block className="loading-section-title"/><Block className="loading-row-subtitle"/><Block className="loading-row-amount"/></div><List rows={3}/><List rows={2}/></>;
   if(config.layout === "people") return <><Actions count={config.actions??0}/><List add rows={3}/><Filters count={0} mode={mode}/><List rows={3}/></>;
   if(config.layout === "settings" && tab === "usaha") return <><Tabs count={config.tabs??0}/><div className="loading-detail loading-settings"><Block className="loading-section-title"/><Block className="loading-control"/><Block className="loading-control"/><Block className="loading-control"/></div></>;
-  return <>{config.actions&&<Actions count={config.actions}/>} {config.tabs&&<Tabs count={config.tabs}/>} {(config.filters!==undefined||pathname==="/stok"&&tab==="riwayat")&&<Filters count={config.filters??0} search={config.search||pathname==="/stok"} mode={mode}/>} {config.layout==="analysis"&&<Block className="loading-notice"/>}<List add={config.add}/>{config.layout==="analysis"&&<List rows={2}/>}</>;
+  return <>{config.actions&&<Actions count={config.actions}/>} {config.tabs&&<Tabs count={config.tabs}/>} {(config.filters!==undefined||pathname==="/stok")&&<Filters count={config.filters??0} search={config.search||pathname==="/stok"} mode={pathname==="/stok"?"none":mode}/>} {config.layout==="analysis"&&<Block className="loading-notice"/>}<List add={config.add}/>{config.layout==="analysis"&&<List rows={2}/>}</>;
 }
 
 function Screen({ pathname, mode, tab }: { pathname: string; mode?: string; tab?: string }) {
-  const config = modules[pathname]??(pathname.startsWith("/dokumen/")?{title:"Dokumen",layout:"detail" as const}:{title:"Memuat",layout:"list" as const});
+  const config = modules[pathname]??(pathname.startsWith("/stok/")?{title:"Rincian stok",layout:"detail" as const}:pathname.startsWith("/dokumen/")?{title:"Dokumen",layout:"detail" as const}:{title:"Memuat",layout:"list" as const});
   if(config.layout==="login") return <main className="loading-login" role="status" aria-label="Memuat halaman masuk"><span className="sr-only">Memuat halaman masuk…</span><div aria-hidden="true"><Block className="loading-login-logo"/><Block className="loading-greeting-title"/><Block className="loading-control"/><Block className="loading-control"/><Block className="loading-control"/></div></main>;
   const period=mode??(config.all?"all":config.monthly?"month":"date");
   return <div className="app-layout loading-app">

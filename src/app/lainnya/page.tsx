@@ -11,13 +11,12 @@ export default async function Page() {
     { title: "Operasional", items: [
       { href: "/dokumen", label: "Dokumen & draft", detail: "Transaksi tersimpan dan dokumen final", show: true },
       { href: "/penerimaan", label: "Timbang penerimaan", detail: "Catat berat fisik barang masuk", show: office || roles.includes("production") },
-      { href: "/produksi", label: "Produksi & konversi", detail: "Hasil potong dan perubahan satuan", show: office || roles.includes("production") },
-      { href: "/stok", label: "Produk & stok", detail: "Persediaan dan pergerakan barang", show: office || roles.includes("production") },
+      { href: "/stok", label: "Stok", detail: "Persediaan ayam hidup dan hasil olahan", show: office || roles.includes("production") },
+      { href: "/produksi", label: "Hasil potong", detail: "Catat pengolahan dan hasil timbang", show: office || roles.includes("production") },
       { href: "/riwayat", label: "Riwayat transaksi", detail: "Rekap penjualan dan pembelian", show: office },
     ] },
     { title: "Keuangan & tim", items: [
-      { href: "/tagihan", label: "Piutang & hutang", detail: "Sisa tagihan dan pembayaran", show: office || roles.includes("collector") },
-      { href: "/setoran", label: "Setoran penagih", detail: "Penyerahan dan verifikasi uang", show: office || roles.includes("collector") },
+      { href: "/tagihan", label: "Piutang & hutang", detail: "Sisa tagihan dan pembayaran", show: office },
       { href: "/sdm", label: "Pekerja, gaji & kasbon", detail: "Data pekerja dan pembayaran gaji", show: office },
       { href: "/aset", label: "Aset tetap", detail: "Perolehan dan pelepasan aset", show: office },
     ] },

@@ -1,34 +1,40 @@
-import Link from "next/link";
-import { randomUUID } from "node:crypto";
 import { requireAccess } from "@/lib/access";
+import { redirect } from "next/navigation";
 import { businessToday,resolvePeriod,type Query } from "@/lib/period";
 import { getFormOptions } from "@/lib/form-options";
 import { officeRoles,paymentStatus,type Obligation } from "@/lib/operations";
 import { formatDate,formatDecimal } from "@/lib/format";
+import { nextBusinessDate } from "@/lib/reminders";
 import { AppShell } from "@/components/app-shell";
 import { PeriodFilter } from "@/components/period-filter";
 import { Sheet } from "@/components/sheet";
-import { PaymentForm } from "@/components/transaction-forms";
+import { BillDetails } from "@/components/bill-details";
 import { EmptyState,ListRow,SectionHeading,Tabs } from "@/components/ui";
 import { Feedback,Pagination,pageNumber } from "@/components/query-ui";
 export default async function Page({searchParams}:{searchParams:Promise<Query>}){
- const {db,role,roles,user}=await requireAccess([...officeRoles,"collector"]);const q=await searchParams;const office=roles.some(r=>officeRoles.includes(r));const kind=q.tab==="hutang"&&office?"payable":"receivable";const today=businessToday();const period=resolvePeriod({...q,period:q.period??"all"});const page=pageNumber(q);
- let request=db.from("obligations").select("*").eq("kind",kind).order("document_date",{ascending:false}).order("source_id");
+ const {db,role,roles,user}=await requireAccess(officeRoles);const q=await searchParams;const kind=q.tab==="hutang"?"payable":"receivable";const today=businessToday();const period=resolvePeriod({...q,period:q.period??"all"});const page=pageNumber(q);
+ if(q.status==="due_soon"){const next=new URLSearchParams(Object.entries(q).filter((entry):entry is [string,string]=>typeof entry[1]==="string"));next.set("status","open");next.delete("page");redirect(`/tagihan?${next}`);}
+ const reminder=["today","tomorrow","overdue","unscheduled"].includes(q.status??"");
+ let request=db.from("obligations").select("*").eq("kind",kind);
+ request=reminder?request.order("due_date",{ascending:true,nullsFirst:false}).order("document_date").order("source_id"):request.order("document_date",{ascending:false}).order("source_id");
  if(period.start)request=request.gte("document_date",period.start);if(period.end)request=request.lte("document_date",period.end);
  if(q.q)request=request.ilike("partner_name",`%${q.q.replace(/[%_]/g,"").slice(0,100)}%`);
- if(q.status==="open")request=request.gt("balance_amount",0);else if(q.status==="paid")request=request.eq("balance_amount",0);else if(q.status==="overdue")request=request.gt("balance_amount",0).lt("due_date",today);
- const [result,options]=await Promise.all([request.range((page-1)*30,page*30),getFormOptions(db,user.id,office,false)]);const bills=(result.data??[]) as Obligation[];
- const tab=kind==="payable"?"hutang":"piutang";const path=`/tagihan?tab=${tab}`;
+ if(q.status==="paid")request=request.eq("balance_amount",0);
+ else if(q.status==="open"||reminder)request=request.gt("balance_amount",0);
+ if(q.status==="overdue")request=request.lt("due_date",today);
+ if(q.status==="today")request=request.eq("due_date",today);
+ if(q.status==="tomorrow")request=request.eq("due_date",nextBusinessDate(today));
+ if(q.status==="unscheduled")request=request.is("due_date",null);
+ const [result,options]=await Promise.all([request.range((page-1)*30,page*30),getFormOptions(db,user.id,true,false)]);const bills=(result.data??[]) as Obligation[];
+ const tab=kind==="payable"?"hutang":"piutang";const params=new URLSearchParams(Object.entries({...q,tab}).filter((entry):entry is [string,string]=>typeof entry[1]==="string"&&!['error','ok','r'].includes(entry[0])));const path=`/tagihan?${params}`;
  return <AppShell title="Piutang & hutang" active="finance" role={role} roles={roles}>
   <Feedback query={q} error={!!result.error||options.error}/>
-  {office&&<Tabs active={tab} items={[{id:"piutang",label:"Piutang pelanggan",href:"/tagihan?tab=piutang"},{id:"hutang",label:"Hutang supplier",href:"/tagihan?tab=hutang"}]}/>}
-  <PeriodFilter compact period={period} today={today} search filters={[{name:"status",label:"Pembayaran",options:[{value:"",label:"Semua"},{value:"open",label:"Belum lunas"},{value:"paid",label:"Lunas"},{value:"overdue",label:"Lewat tempo"}]}]}/>
+  <Tabs active={tab} items={[{id:"piutang",label:"Piutang pelanggan",href:"/tagihan?tab=piutang"},{id:"hutang",label:"Hutang supplier",href:"/tagihan?tab=hutang"}]}/>
+  <PeriodFilter compact period={period} today={today} search filters={[{name:"status",label:"Pembayaran",options:[{value:"",label:"Semua"},{value:"open",label:"Belum lunas"},{value:"paid",label:"Lunas"},{value:"today",label:"Hari ini"},{value:"tomorrow",label:"Besok"},{value:"overdue",label:"Terlambat"},{value:"unscheduled",label:"Belum dijadwalkan"}]}]}/>
   <SectionHeading title={kind==="payable"?"Tagihan supplier":"Tagihan pelanggan"}/>
-  <div className="list-card">{bills.slice(0,30).map(b=><Sheet key={b.source_id} title={b.reference} className="row-button" trigger={<ListRow title={b.partner_name} subtitle={`${b.reference} · ${formatDate(b.document_date)} · ${paymentStatus(b,today)}`} trailing={<strong>Sisa Rp{formatDecimal(b.balance)}</strong>}/>}>
-    <div className="document-summary"><strong>{b.partner_name}</strong><span className="badge">{paymentStatus(b,today)}</span><p>{b.reference} · {formatDate(b.document_date)}</p>{b.due_date&&<p>Jatuh tempo {formatDate(b.due_date)}</p>}<p>Total Rp{formatDecimal(b.total)} · Terbayar Rp{formatDecimal(b.paid)}</p><strong>Sisa Rp{formatDecimal(b.balance)}</strong></div>
-    <Link className="text-link" href={kind==="payable"?`/pembelian?period=all&receipt=${b.source_id}`:`/dokumen/${b.source_id}`}>Lihat dokumen</Link>
-    {Number(b.balance)>0&&<details className="form-details"><summary>Catat pembayaran</summary><PaymentForm id={randomUUID()} bill={b} today={today} accounts={office&&kind==="receivable"?options.paymentAccounts??options.accounts:office?options.accounts:options.collectorAccounts??[]} returnTo={path}/></details>}
-  </Sheet>)}{!result.error&&!bills.length&&<EmptyState title="Belum ada tagihan" icon="file"/>}</div>
+  <div className="list-card">{bills.slice(0,30).map(b=><Sheet key={b.source_id} title={b.reference} className="row-button" trigger={<ListRow title={b.partner_name} subtitle={`${b.reference} \u00b7 ${b.due_date?"Tempo "+formatDate(b.due_date):"Belum dijadwalkan"} \u00b7 ${paymentStatus(b,today)}`} trailing={<strong>Sisa Rp{formatDecimal(b.balance)}</strong>}/>}>
+    <BillDetails bill={b} today={today} accounts={options.accounts} returnTo={path} accountsError={options.error}/>
+  </Sheet>)}{!result.error&&!bills.length&&<EmptyState title="Tidak ada tagihan sesuai filter" icon="file"/>}</div>
   <Pagination query={q} path="/tagihan" hasNext={bills.length>30}/>
  </AppShell>;
 }

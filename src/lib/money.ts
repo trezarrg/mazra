@@ -9,3 +9,10 @@ export function fromCents(value: bigint) {
   return `${value < BigInt(0) ? "-" : ""}${digits.slice(0, -2)}.${digits.slice(-2)}`;
 }
 export function sumMoney(values: (string | number)[]) { return fromCents(values.reduce<bigint>((sum, value) => sum + cents(value), BigInt(0))); }
+export function multiplyMoney(price: string | number, quantity: string | number) {
+  const [whole, fraction = ""] = String(quantity).split(".");
+  const scale = BigInt(10) ** BigInt(fraction.length);
+  const product = cents(price) * BigInt((whole || "0") + fraction);
+  const sign = product < BigInt(0) ? BigInt(-1) : BigInt(1);
+  return fromCents(sign * ((product * sign + scale / BigInt(2)) / scale));
+}

@@ -1,0 +1,15 @@
+# Konfigurasi Auth klien yang telah diterapkan; hanya untuk proyek wgdjtmdomseqhzgatbsk.
+project_id = "rizki-berkah-abadi"
+[db.seed]
+enabled = false
+[auth]
+site_url = "https://rizkiberkahabadi.pages.dev"
+additional_redirect_urls = ["http://localhost:3002", "https://rizkiberkahabadi.pages.dev"]
+enable_signup = false
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+[auth.email]
+enable_confirmations = true
+max_frequency = "1m"
+otp_length = 8

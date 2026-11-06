@@ -1,0 +1,52 @@
+name: Pasang satu instalasi
+on:
+  workflow_call:
+    inputs:
+      client_id:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLIENT_ID: ${{ inputs.client_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+      - run: npm ci
+      - name: Periksa tujuan dan siapkan konfigurasi instalasi
+        run: node scripts/prepare-client.mjs environment "$CLIENT_ID"
+      - run: npm run test:clients
+      - run: npm run build:vinext
+      - run: npm run typecheck
+      - name: Siapkan migrasi tanpa data demo
+        run: node scripts/prepare-client-db.mjs
+      - name: Hubungkan folder rilis ke database tujuan
+        run: supabase link --project-ref "$CLIENT_PROJECT_REF" --workdir artifacts/client-release
+      - name: Periksa migrasi yang akan diterapkan
+        run: supabase db push --linked --dry-run --workdir artifacts/client-release
+      - name: Terapkan migrasi
+        run: supabase db push --linked --yes --workdir artifacts/client-release
+      - name: Rilis aplikasi
+        run: npx cf deploy --prebuilt --mode production
+      - name: Rilis alamat Pages bila dikonfigurasi
+        run: node scripts/deploy-pages-gateway.mjs "$CLIENT_ID"
+      - name: Periksa alamat publik dan konfigurasi autentikasi
+        run: node scripts/check-client-release.mjs "$CLIENT_ID"

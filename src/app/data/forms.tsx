@@ -6,9 +6,9 @@ export type Unit = { unit: string };
 export type UnitCatalog = { code: string; name: string; whole_only: boolean; active: boolean };
 export type Variant = { id: string; name: string; active: boolean };
 export type Product = { id: string; name: string; active: boolean; product_units: Unit[]; product_variants: Variant[] };
-export type Account = { id: string; name: string; account_type: string; holder_id: string | null; active: boolean };
+export type Account = { id: string; name: string; account_type: string; active: boolean };
 export type Profile = { id: string; full_name: string; role: string; active: boolean; profile_extra_roles: { role: string }[] };
-export function roleOptions() { return [ { value: "owner", label: "Owner" }, { value: "admin", label: "Admin" }, { value: "production", label: "Produksi" }, { value: "driver", label: "Sopir" }, { value: "collector", label: "Penagih" }]; }
+export function roleOptions() { return [ { value: "owner", label: "Owner" }, { value: "admin", label: "Admin" }, { value: "production", label: "Produksi" }, { value: "driver", label: "Sopir" }]; }
 
 export function RoleChecks({ selected = ["admin"] }: { selected?: string[] }) { return <><span className="field-label">Peran</span><div className="checks">{roleOptions().map(role => <label className="check" key={role.value}><input type="checkbox" name="roles" value={role.value} defaultChecked={selected.includes(role.value)}/> {role.label}</label>)}</div></>; }
 
@@ -23,8 +23,8 @@ export function ProductForm({ product, units }: { product?: Product; units: Unit
 export function VariantForm({ productId, variant }: { productId: string; variant?: Variant }) {
   return <form action={saveVariant} className="inline-form"><input type="hidden" name="product_id" value={productId}/><input type="hidden" name="id" value={variant?.id ?? ""}/><label>Nama varian<input name="name" required maxLength={200} defaultValue={variant?.name}/></label><Active value={variant?.active}/><SubmitButton>Simpan varian</SubmitButton></form>;
 }
-export function AccountForm({ account, profiles }: { account?: Account; profiles: Profile[] }) {
-  return <form action={saveAccount} className="form compact"><input type="hidden" name="id" value={account?.id ?? ""}/><label>Nama akun<input name="name" required maxLength={200} defaultValue={account?.name}/></label><Dropdown label="Jenis" name="account_type" defaultValue={account?.account_type ?? "cash"} options={[{value:"cash",label:"Kas"},{value:"bank",label:"Bank"},{value:"collector",label:"Kas penagih"}]}/><Dropdown label="Pemegang kas penagih" name="holder_id" defaultValue={account?.holder_id ?? ""} options={[{value:"",label:"Tidak ada"}, ...(account?.holder_id && !profiles.some(p => p.id === account.holder_id) ? [{value:account.holder_id,label:"Pemegang saat ini"}] : []), ...profiles.map(p => ({value:p.id,label:`${p.full_name} (${p.role})`}))]}/><Active value={account?.active}/><SubmitButton>Simpan akun</SubmitButton></form>;
+export function AccountForm({ account }: { account?: Account }) {
+  return <form action={saveAccount} className="form compact"><input type="hidden" name="id" value={account?.id ?? ""}/><label>Nama akun<input name="name" required maxLength={200} defaultValue={account?.name}/></label><Dropdown label="Jenis" name="account_type" defaultValue={account?.account_type ?? "cash"} options={[{value:"cash",label:"Kas"},{value:"bank",label:"Bank"}]}/><Active value={account?.active}/><SubmitButton>Simpan akun</SubmitButton></form>;
 }
 
 

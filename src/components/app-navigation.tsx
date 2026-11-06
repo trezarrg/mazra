@@ -1,4 +1,6 @@
 "use client";
+import { branding } from "@/lib/branding";
+
 
 import Image from "next/image";
 import Link from "next/link";
@@ -34,9 +36,9 @@ function itemsFor(roles: string[]): Item[] {
   const office = roles.some(r => ["developer", "owner", "admin"].includes(r));
   return [
     { id: "home", href: "/", label: "Beranda", icon: "home" },
-    ...(office || roles.some(r => ["driver", "collector"].includes(r)) ? [{ id: "sale" as const, href: "/penjualan", label: "Penjualan", icon: "file" as const }] : []),
+    ...(office || roles.includes("driver") ? [{ id: "sale" as const, href: "/penjualan", label: "Penjualan", icon: "file" as const }] : []),
     ...(office ? [{ id: "purchase" as const, href: "/pembelian", label: "Pembelian", icon: "file" as const }] : []),
-    ...(office || roles.includes("collector") ? [{ id: "finance" as const, href: office ? "/keuangan" : "/tagihan", label: "Keuangan", icon: "wallet" as const }] : []),
+    ...(office ? [{ id: "finance" as const, href: "/keuangan", label: "Keuangan", icon: "wallet" as const }] : []),
     { id: "more", href: "/lainnya", label: "Lainnya", icon: "grid" },
   ];
 }
@@ -44,10 +46,10 @@ function itemsFor(roles: string[]): Item[] {
 export function Sidebar({ roles, active }: { roles: string[]; active: Destination }) {
   const selected = active === "stock" || active === "data" ? "more" : active;
   return <aside className="sidebar">
-    <Link href="/" className="sidebar-brand" aria-label="Beranda"><Image src="/Logo.png" alt="Rizki Berkah Abadi Farm" width={150} height={100}/></Link>
+    <Link href="/" className="sidebar-brand" aria-label="Beranda"><Image src={branding.logo} alt={branding.name} width={150} height={100}/></Link>
     <span className="nav-label">RUANG KERJA</span>
     <nav aria-label="Navigasi desktop">{itemsFor(roles).map(item => <Link key={item.id} href={item.href} className={`side-link ${selected === item.id ? "is-active" : ""}`} aria-current={selected === item.id ? "page" : undefined}>{item.label}</Link>)}</nav>
-    <div className="sidebar-footer"><div><strong>Rizki Berkah Abadi</strong><small>Operasional usaha</small></div><form action={logout} onSubmit={() => updateRoles(null)}><button className="icon-button" aria-label="Keluar dari akun"><Icon name="logout" size={18}/></button></form></div>
+    <div className="sidebar-footer"><div><strong>{branding.name}</strong><small>Operasional usaha</small></div><form action={logout} onSubmit={() => updateRoles(null)}><button className="icon-button" aria-label="Keluar dari akun"><Icon name="logout" size={18}/></button></form></div>
   </aside>;
 }
 
@@ -60,12 +62,12 @@ function destination(pathname: string): Destination {
   if (pathname === "/") return "home";
   if (pathname === "/penjualan") return "sale";
   if (pathname === "/pembelian") return "purchase";
-  if (["/keuangan", "/tagihan", "/setoran"].includes(pathname)) return "finance";
+  if (["/keuangan", "/tagihan"].includes(pathname)) return "finance";
   return "more";
 }
 
 export function LoadingNavigation({ pathname, placement }: { pathname: string; placement: "sidebar" | "bottom" }) {
   const roles = useSyncExternalStore(subscribe, getRoles, getServerRoles);
-  if (!roles) return placement === "sidebar" ? <aside className="sidebar"><div className="sidebar-brand"><Image src="/Logo.png" alt="Rizki Berkah Abadi Farm" width={150} height={100}/></div></aside> : null;
+  if (!roles) return placement === "sidebar" ? <aside className="sidebar"><div className="sidebar-brand"><Image src={branding.logo} alt={branding.name} width={150} height={100}/></div></aside> : null;
   return placement === "sidebar" ? <Sidebar roles={roles} active={destination(pathname)}/> : <BottomNavigation roles={roles} active={destination(pathname)}/>;
 }

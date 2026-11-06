@@ -1,17 +1,15 @@
+import { branding } from "@/lib/branding";
 import Image from "next/image";
-import { login } from "./actions";
-import { PasswordInput } from "@/components/password-input";
-import { SubmitButton } from "@/components/submit-button";
-import { Notice } from "@/components/ui";
+import { LoginForm } from "@/components/login-form";
 import { ClearNavigation } from "@/components/app-navigation";
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const message = error === "config" ? "Koneksi belum dikonfigurasi. Hubungi pengelola." : error === "missing" ? "Isi email atau nama pengguna dan kata sandi." : error ? "Email, nama pengguna, atau kata sandi tidak sesuai." : null;
+  const initialError = error === "config" ? "config" : error === "missing" ? "missing" : error ? "invalid" : null;
   return (
     <main className="login-layout">
       <ClearNavigation/>
-      <section className="login-art" aria-label="Rizki Berkah Abadi Farm">
-        <Image className="login-logo" src="/Logo.png" alt="Rizki Berkah Abadi Farm" width={180} height={120} preload/>
+      <section className="login-art" aria-label={branding.name}>
+        <Image className="login-logo" src={branding.logo} alt={branding.name} width={180} height={120} preload/>
         <div className="login-art-copy">
           <h2>Usaha rapi.<br/>Kerja lebih<br/><em>ringan.</em></h2>
           <p>Pembelian, produksi, dan penjualan.<br/>Tercatat dalam satu tempat.</p>
@@ -21,23 +19,13 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
       <section className="login-panel" aria-labelledby="login-title">
         <div className="login-form-wrap">
           <div className="login-mobile-brand">
-            <Image className="login-logo" src="/Logo.png" alt="Rizki Berkah Abadi Farm" width={180} height={120} preload/>
+            <Image className="login-logo" src={branding.logo} alt={branding.name} width={180} height={120} preload/>
           </div>
           <header className="login-heading">
             <h1 id="login-title">Selamat datang.</h1>
             <p className="login-intro">Masuk untuk melanjutkan pekerjaan.</p>
           </header>
-          <form action={login} className="form login-form">
-            <label htmlFor="login-email">Email atau nama pengguna
-              <input id="login-email" name="email" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="Email atau owner" required/>
-            </label>
-            <div className="login-password-field">
-              <label htmlFor="login-password">Kata sandi</label>
-              <PasswordInput/>
-            </div>
-            {message && <Notice error>{message}</Notice>}
-            <SubmitButton>Masuk</SubmitButton>
-          </form>
+          <LoginForm initialError={initialError}/>
           <p className="login-security">Akses khusus tim usaha</p>
         </div>
         <footer className="login-credit">© 2026 <strong>TrezarRG</strong></footer>

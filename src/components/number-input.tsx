@@ -6,22 +6,27 @@ function display(value: string) {
   const [whole = "", ...decimals] = value.replace(/\./g, "").replace(/[^\d,]/g, "").split(",");
   return whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (decimals.length ? "," + decimals.join("") : "");
 }
-export function NumberInput({ name, defaultValue = "", placeholder, required = false, onValueChange }: { name: string; defaultValue?: string | number; placeholder?: string; required?: boolean; onValueChange?: (value: string) => void }) {
+export function NumberInput({ name, defaultValue = "", value: controlledValue, placeholder, required = false, onValueChange }: { name: string; defaultValue?: string | number; value?: string | number; placeholder?: string; required?: boolean; onValueChange?: (value: string) => void }) {
   const initial = defaultValue === "" ? "" : formatDecimal(defaultValue);
-  const [value, setValue] = useState(initial);
+  const [localValue, setLocalValue] = useState(initial);
+  const localNumber = localValue.replace(/\./g, "").replace(",", ".");
+  const value = controlledValue === undefined || String(controlledValue) === localNumber ? localValue : controlledValue === "" ? "" : formatDecimal(controlledValue);
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const form = input.current?.form;
-    const reset = () => setValue(initial);
+    const reset = () => {
+      setLocalValue(initial);
+      if (controlledValue !== undefined) onValueChange?.(String(defaultValue));
+    };
     form?.addEventListener("reset", reset);
     return () => form?.removeEventListener("reset", reset);
-  }, [initial]);
+  }, [controlledValue, defaultValue, initial, onValueChange]);
   function change(event: React.ChangeEvent<HTMLInputElement>) {
     const raw = event.target.value;
     const cursor = event.target.selectionStart ?? raw.length;
     const position = raw.slice(0, cursor).replace(/\./g, "").replace(/[^\d,]/g, "").length;
     const next = display(raw);
-    setValue(next);
+    setLocalValue(next);
     onValueChange?.(next.replace(/\./g, "").replace(",", "."));
     requestAnimationFrame(() => {
       if (!input.current) return;

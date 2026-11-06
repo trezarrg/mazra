@@ -2,17 +2,21 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAccess } from "@/lib/access";
+import { failureReturnPath } from "@/lib/action-feedback";
 
 const text = (data: FormData, key: string, max = 200) => String(data.get(key) ?? "").trim().slice(0, max);
 const optional = (data: FormData, key: string, max = 200) => text(data, key, max) || null;
-function complete(error: string | undefined, tab: string) {
+function complete(data: FormData, error: string | undefined, tab: string) {
   revalidatePath("/data");
-  redirect(`/data?tab=${tab}&r=${Date.now()}&${error ? `error=${encodeURIComponent(error)}` : "ok=1"}`);
+  const url = new URL(error ? failureReturnPath(data, `/data?tab=${tab}`) : `/data?tab=${tab}`, "http://localhost");
+  url.searchParams.set("r", String(Date.now()));
+  url.searchParams.set(error ? "error" : "ok", error || "1");
+  redirect(url.pathname + url.search);
 }
 
 
 export async function savePartner(data: FormData) {
-  const finish = (error?: string) => complete(error, "mitra");
+  const finish = (error?: string) => complete(data, error, "mitra");
   const fail = (error: { message: string } | null) => { if(error) finish("Data tidak dapat disimpan. Periksa isian dan coba lagi."); };
   const { db } = await requireAccess(["developer", "owner", "admin"]);
   const id = text(data, "id"), name = text(data, "name");
@@ -23,7 +27,7 @@ export async function savePartner(data: FormData) {
   fail(error); finish();
 }
 export async function saveProduct(data: FormData) {
-  const finish = (error?: string) => complete(error, "produk");
+  const finish = (error?: string) => complete(data, error, "produk");
   const fail = (error: { message: string } | null) => { if(error) finish("Data tidak dapat disimpan. Periksa isian dan coba lagi."); };
   const { db } = await requireAccess(["developer", "owner", "admin"]);
   const id = text(data, "id"), name = text(data, "name");
@@ -34,7 +38,7 @@ export async function saveProduct(data: FormData) {
   fail(error); finish();
 }
 export async function saveUnit(data: FormData) {
-  const finish = (error?: string) => complete(error, "satuan");
+  const finish = (error?: string) => complete(data, error, "satuan");
   const { db } = await requireAccess(["developer", "owner", "admin"]);
   const existing = data.has("existing"), code = text(data, "code", 20).toLowerCase(), name = text(data, "name", 60);
   if (!/^[a-z][a-z0-9_]{0,19}$/.test(code) || !name) finish("Isi kode dan nama satuan dengan benar.");
@@ -43,7 +47,7 @@ export async function saveUnit(data: FormData) {
   finish();
 }
 export async function saveVariant(data: FormData) {
-  const finish = (error?: string) => complete(error, "produk");
+  const finish = (error?: string) => complete(data, error, "produk");
   const fail = (error: { message: string } | null) => { if(error) finish("Data tidak dapat disimpan. Periksa isian dan coba lagi."); };
   const { db } = await requireAccess(["developer", "owner", "admin"]);
   const product_id = text(data, "product_id"), name = text(data, "name"), id = text(data, "id");
@@ -53,17 +57,17 @@ export async function saveVariant(data: FormData) {
   fail(error); finish();
 }
 export async function saveAccount(data: FormData) {
-  const finish = (error?: string) => complete(error, "akun");
+  const finish = (error?: string) => complete(data, error, "akun");
   const fail = (error: { message: string } | null) => { if(error) finish("Data tidak dapat disimpan. Periksa isian dan coba lagi."); };
   const { db } = await requireAccess(["developer", "owner", "admin"]);
-  const id = text(data, "id"), name = text(data, "name"), account_type = text(data, "account_type"), holder_id = optional(data, "holder_id");
-  if (!name || !["cash", "bank", "collector"].includes(account_type) || (account_type === "collector") !== !!holder_id) finish("Isi nama dan jenis akun dengan benar; kas penagih memerlukan pemegang.");
-  const value = { name, account_type, holder_id, active: data.has("active") };
+  const id = text(data, "id"), name = text(data, "name"), account_type = text(data, "account_type");
+  if (!name || !["cash", "bank"].includes(account_type)) finish("Isi nama dan jenis akun kas atau bank dengan benar.");
+  const value = { name, account_type, holder_id: null, active: data.has("active") };
   const { error } = id ? await db.from("cash_accounts").update(value).eq("id", id) : await db.from("cash_accounts").insert(value);
   fail(error); finish();
 }
 export async function saveSettings(data: FormData) {
-  const finish = (error?: string) => complete(error, "usaha");
+  const finish = (error?: string) => complete(data, error, "usaha");
   const fail = (error: { message: string } | null) => { if(error) finish("Data tidak dapat disimpan. Periksa isian dan coba lagi."); };
   const { db } = await requireAccess(["developer", "owner"]);
   const name = text(data, "name");
@@ -72,19 +76,19 @@ export async function saveSettings(data: FormData) {
   fail(error); finish();
 }
 export async function addProfile(data: FormData) {
-  const finish = (error?: string) => complete(error, "pengguna");
+  const finish = (error?: string) => complete(data, error, "pengguna");
   const { db } = await requireAccess(["developer", "owner"]);
   const email = text(data, "email", 254), name = text(data, "name"), roles = data.getAll("roles").map(String);
-  if (!email || !name || !roles.length || roles.some(role => !["owner", "admin", "production", "driver", "collector"].includes(role))) finish("Isi email, nama, dan sedikitnya satu peran pengguna.");
+  if (!email || !name || !roles.length || roles.some(role => !["owner", "admin", "production", "driver"].includes(role))) finish("Isi email, nama, dan sedikitnya satu peran pengguna.");
   const { error } = await db.rpc("add_team_access", { p_email: email, p_name: name, p_roles: roles });
   if (error) finish(error.message.includes("Akun Auth") ? "Akun Auth terkonfirmasi tidak ditemukan." : error.message.includes("sudah ada") ? "Profil pengguna sudah ada." : "Profil tidak dapat dibuat.");
   finish();
 }
 export async function saveProfile(data: FormData) {
-  const finish = (error?: string) => complete(error, "pengguna");
+  const finish = (error?: string) => complete(data, error, "pengguna");
   const { db } = await requireAccess(["developer", "owner"]);
   const id = text(data, "id"), name = text(data, "name"), roles = data.getAll("roles").map(String);
-  if (!id || !name || !roles.length || roles.some(role => !["owner", "admin", "production", "driver", "collector"].includes(role))) finish("Isi nama dan sedikitnya satu peran pengguna.");
+  if (!id || !name || !roles.length || roles.some(role => !["owner", "admin", "production", "driver"].includes(role))) finish("Isi nama dan sedikitnya satu peran pengguna.");
   const { error } = await db.rpc("save_team_access", { p_id: id, p_name: name, p_roles: roles, p_active: data.has("active") });
   if (error) finish(error.message.includes("Akses pengelola sendiri") ? "Akses pengelola sendiri tidak dapat dihapus atau dinonaktifkan." : "Profil tidak dapat disimpan.");
   finish();

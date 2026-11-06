@@ -1,3 +1,8 @@
-import { OperationListPage } from "@/components/operation-list-page";
-import type { Query } from "@/lib/period";
-export default async function Page({searchParams}:{searchParams:Promise<Query>}) {return <OperationListPage query={await searchParams} kind="deposit" title="Setoran penagih" path="/setoran"/>;}
+import { redirect } from "next/navigation";
+import { requireAccess } from "@/lib/access";
+import { officeRoles } from "@/lib/operations";
+
+export default async function Page() {
+  await requireAccess(officeRoles);
+  redirect("/keuangan");
+}

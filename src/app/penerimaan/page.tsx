@@ -1,27 +1,48 @@
-import {randomUUID} from "node:crypto";
-import {requireAccess} from "@/lib/access";
-import {businessToday,resolvePeriod,type Query} from "@/lib/period";
-import {officeRoles} from "@/lib/operations";
-import {formatDate,formatDecimal} from "@/lib/format";
-import {AppShell} from "@/components/app-shell";
-import {PeriodFilter} from "@/components/period-filter";
-import {Sheet} from "@/components/sheet";
-import {SubmitButton} from "@/components/submit-button";
-import {Feedback,Pagination,pageNumber} from "@/components/query-ui";
-import {EmptyState,ListRow,SectionHeading} from "@/components/ui";
-import {cancelMeasurement} from "@/app/operasi/actions";
-import {MeasurementForm} from "./forms";
-export default async function Page({searchParams}:{searchParams:Promise<Query>}){
- const {db,role,roles,user}=await requireAccess([...officeRoles,"production"]);const q=await searchParams;const today=businessToday();const period=resolvePeriod(q);const page=pageNumber(q);const office=roles.some(r=>officeRoles.includes(r));
- let request=db.from("receipt_measurements").select("*").order("created_at",{ascending:false});if(period.start)request=request.gte("measurement_date",period.start);if(period.end)request=request.lte("measurement_date",period.end);
- const [tasks,result]=await Promise.all([db.rpc("receiving_tasks"),request.range((page-1)*30,page*30)]);const orders=(tasks.data??[]) as {id:string;document_no:number;product_name:string;origin:string|null}[];const list=result.data??[];
- return <AppShell title="Timbang penerimaan" active="more" role={role} roles={roles}>
-  <Feedback query={q} error={!!tasks.error||!!result.error}/><PeriodFilter compact period={period} today={today}/>
-  <SectionHeading title="Hasil timbang" action={<Sheet title="Catat netto aktual" trigger="Catat"><MeasurementForm id={randomUUID()} today={today} orders={orders.map(o=>({value:o.id,label:`DO #${o.document_no} · ${o.product_name}${o.origin?` · ${o.origin}`:""}`}))}/></Sheet>}/>
-  <div className="list-card">{list.slice(0,30).map(m=>{const status=m.status==="accepted"?"Dikonfirmasi":m.status==="cancelled"?"Dibatalkan":"Menunggu konfirmasi";const order=orders.find(o=>o.id===m.do_id)?.document_no??m.do_id.slice(0,8);return <Sheet key={m.id} title="Rincian timbang" className="row-button" trigger={<ListRow title={`DO ${order}`} subtitle={`${formatDate(m.measurement_date)} · ${status}`} trailing={<strong>{formatDecimal(m.actual_weight)} kg</strong>}/>}>
-    <div className="document-summary"><strong>{formatDecimal(m.actual_weight)} kg</strong><span className="badge">{status}</span><p>{formatDate(m.measurement_date)} · DO {order}</p>{m.origin_weight&&<p>Asal {formatDecimal(m.origin_weight)} kg · Selisih {formatDecimal((Number(m.actual_weight)-Number(m.origin_weight)).toFixed(3))} kg</p>}{m.note&&<p>{m.note}</p>}</div>
-    {m.status==="pending"&&(office||m.created_by===user.id)&&<details className="form-details"><summary>Batalkan hasil timbang</summary><form action={cancelMeasurement} className="form"><input type="hidden" name="id" value={m.id}/><input type="hidden" name="return_to" value="/penerimaan"/><label>Alasan<textarea name="note" required maxLength={1000}/></label><SubmitButton secondary>Batalkan</SubmitButton></form></details>}
-  </Sheet>;})}{!result.error&&!list.length&&<EmptyState title="Belum ada hasil timbang pada periode ini"/>}</div>
-  <Pagination query={q} path="/penerimaan" hasNext={list.length>30}/>
- </AppShell>;
+import Link from "next/link";
+import { requireAccess } from "@/lib/access";
+import { businessToday, resolvePeriod, type Query } from "@/lib/period";
+import { officeRoles } from "@/lib/operations";
+import { formatDate, formatDecimal } from "@/lib/format";
+import { AppShell } from "@/components/app-shell";
+import { PeriodFilter } from "@/components/period-filter";
+import { Sheet } from "@/components/sheet";
+import { SubmitButton } from "@/components/submit-button";
+import { Feedback, Pagination, pageNumber } from "@/components/query-ui";
+import { EmptyState, ListRow, Notice } from "@/components/ui";
+import { cancelMeasurement } from "@/app/operasi/actions";
+import { ReceivingQueue, type ReceivingTask } from "./queue-list";
+
+type History = { id: string; do_id: string; document_no: number; supplier_name: string; product_name: string; measurement_date: string; origin_weight: string | null; actual_weight: string; note: string | null; status: string; created_by: string };
+
+export default async function Page({ searchParams }: { searchParams: Promise<Query> }) {
+  const { db, role, roles, user } = await requireAccess([...officeRoles, "production"]);
+  const q = await searchParams, today = businessToday(), completed = q.status === "done", office = roles.some(r => officeRoles.includes(r));
+  const period = resolvePeriod(q), page = pageNumber(q);
+  let request = completed
+    ? db.rpc("receiving_history").neq("status", "cancelled").order("measurement_date", { ascending: false }).order("created_at", { ascending: false }).order("id")
+    : db.rpc("receiving_queue").order("purchase_date", { ascending: false }).order("document_no", { ascending: false }).order("id");
+  const dateColumn = completed ? "measurement_date" : "purchase_date";
+  if (period.start) request = request.gte(dateColumn, period.start);
+  if (period.end) request = request.lte(dateColumn, period.end);
+  const result = await request.range((page - 1) * 30, page * 30);
+  const tasks = completed ? [] : (result.data ?? []) as ReceivingTask[];
+  const records = completed ? (result.data ?? []) as History[] : [];
+  return <AppShell title="Timbang penerimaan" active="more" role={role} roles={roles}>
+    <Feedback query={completed ? q : { ...q, ok: undefined }} error={!!result.error}/>
+    {!completed && q.ok && <Notice>Hasil timbang dikirim ke Pembelian dan menunggu konfirmasi.</Notice>}
+    <PeriodFilter compact period={period} today={today} filters={[{ name: "status", label: "Status timbang", options: [{ value: "", label: "Belum" }, { value: "done", label: "Sudah" }] }]}/>
+    <div className="list-card">
+      {!completed && <ReceivingQueue tasks={tasks.slice(0, 30)} today={today} error={!!result.error}/>}
+      {completed && records.slice(0, 30).map(record => {
+        const status = record.status === "accepted" ? "Diterima lewat timbang" : record.status === "received" ? "Diterima di Pembelian" : record.status === "cancelled" ? "Timbang dibatalkan" : "Menunggu konfirmasi";
+        return <Sheet key={`${record.status}-${record.id}`} title={`DO #${record.document_no}`} className="row-button" trigger={<ListRow title={`${record.supplier_name} · DO #${record.document_no}`} subtitle={`${formatDate(record.measurement_date)} · ${status}`} trailing={<strong>{formatDecimal(record.actual_weight)} kg</strong>}/>}>
+          <div className="document-summary"><strong>{record.product_name} · {formatDecimal(record.actual_weight)} kg</strong><span className={`badge ${record.status === "accepted" || record.status === "received" ? "badge-green" : record.status === "pending" ? "badge-amber" : ""}`}>{status}</span><p>{formatDate(record.measurement_date)}</p>{record.origin_weight && <p>Berat asal {formatDecimal(record.origin_weight)} kg · Selisih {formatDecimal((Number(record.actual_weight) - Number(record.origin_weight)).toFixed(3))} kg</p>}{record.note && <p>{record.note}</p>}</div>
+          {record.status === "pending" && office && <Link className="button button-primary" href={`/pembelian?do=${record.do_id}&period=all`}>Konfirmasi di Pembelian</Link>}
+          {record.status === "pending" && (office || record.created_by === user.id) && <details className="form-details"><summary>Batalkan hasil timbang</summary><form action={cancelMeasurement} className="form"><input type="hidden" name="id" value={record.id}/><input type="hidden" name="return_to" value="/penerimaan?status=done&period=all"/><label>Alasan<textarea name="note" required maxLength={1000}/></label><SubmitButton secondary>Batalkan hasil timbang</SubmitButton></form></details>}
+        </Sheet>;
+      })}
+      {completed && !result.error && !records.length && <EmptyState title="Belum ada penerimaan yang sudah ditimbang pada periode ini"/>}
+    </div>
+    <Pagination query={q} path="/penerimaan" hasNext={(result.data?.length ?? 0) > 30}/>
+  </AppShell>;
 }
