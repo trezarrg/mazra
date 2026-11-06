@@ -8,7 +8,8 @@ for(let attempt=0;attempt<10;attempt++) {
     const response=await fetch(`${client.url}/login`,{signal:AbortSignal.timeout(15000)});
     const html=await response.text();
     if(response.status!==200 || !html.includes('id="login-email"')) throw new Error("Halaman login belum tersedia.");
-    if(!html.includes('manifest.webmanifest')) throw new Error("Manifest pemasangan belum terpasang.");
+    const head=html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1]??"";
+    if(!head.includes('rel="manifest"') || !head.includes('manifest.webmanifest')) throw new Error("Manifest pemasangan belum terpasang pada head halaman.");
     const manifestResponse=await fetch(`${client.url}/manifest.webmanifest`,{signal:AbortSignal.timeout(15000)});
     if(!manifestResponse.ok) throw new Error("Manifest pemasangan belum tersedia.");
     const manifest=await manifestResponse.json();
