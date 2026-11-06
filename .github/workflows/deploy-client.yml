@@ -46,7 +46,7 @@ jobs:
         run: supabase db push --linked --yes --workdir artifacts/client-release
       - name: Pasang fungsi pembuatan akun
         # Fungsi akun dipasang sebelum UI yang memakainya.
-        run: supabase functions deploy create-team-user --project-ref "$CLIENT_PROJECT_REF" --no-verify-jwt --use-api
+        run: supabase functions deploy create-team-user --project-ref "$CLIENT_PROJECT_REF" --no-verify-jwt --use-api --yes
       - name: Rilis Worker aplikasi
         run: npx cf deploy --prebuilt --mode production
       - name: Rilis alamat Pages bila dikonfigurasi
