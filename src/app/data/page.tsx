@@ -18,7 +18,7 @@ export default async function DataPage({ searchParams }: { searchParams: Promise
   const tab = sections.some(s => s.id === query.tab) ? query.tab! : "mitra";
   const [partners, products, accounts, profiles, settings, units] = await Promise.all([
     db.from("partners").select("*").order("name"),
-    db.from("products").select("*, product_units(unit), product_variants(id,name,active)").order("name"),
+    db.from("products").select("*, product_units(unit), product_variants(id,name,active,kg_per_count)").order("name"),
     db.from("cash_accounts").select("*").order("name"),
     db.from("profiles").select("id,full_name,role,active,profile_extra_roles(role)").neq("role","developer").order("full_name"),
     db.from("business_settings").select("*").eq("id", true).single(),

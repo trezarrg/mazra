@@ -8,6 +8,7 @@ export type PurchaseDocumentData = {
   originWeight: string | null; actualWeight: string; billingQuantity: string | null;
   priceMethod: string; unitPrice: string; total: string; credited: string; paid: string; balance: string;
   dueDate: string | null; note: string | null; payments: DocumentPayment[]; cancelled?:boolean;
+  measurement?:(import("./measurement").Measurement & {count?:string})|null; variant?:string|null;
 };
 
 export function purchaseDocumentNumber(doNumber: number, receiptId: string) {

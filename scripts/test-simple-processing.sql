@@ -18,7 +18,7 @@ declare
  actor uuid; worker uuid:=gen_random_uuid(); other_driver uuid:=gen_random_uuid(); partner uuid:=gen_random_uuid();
  live uuid:=gen_random_uuid(); carcass uuid:=gen_random_uuid(); fillet uuid:=gen_random_uuid(); parts uuid:=gen_random_uuid(); bones uuid:=gen_random_uuid();
  order_id uuid:=gen_random_uuid(); receipt uuid:=gen_random_uuid(); sale uuid:=gen_random_uuid(); cut uuid:=gen_random_uuid(); next_cut uuid:=gen_random_uuid();
- count_sale uuid:=gen_random_uuid(); ret1 uuid:=gen_random_uuid(); ret2 uuid:=gen_random_uuid(); carcass_sale uuid:=gen_random_uuid();
+ count_sale uuid:=gen_random_uuid(); ret1 uuid:=gen_random_uuid(); ret2 uuid:=gen_random_uuid(); carcass_sale uuid:=gen_random_uuid(); carcass_return uuid:=gen_random_uuid();
  line_id uuid; account uuid:=gen_random_uuid(); data jsonb; sale_data jsonb; return_data jsonb; summary jsonb; prod uuid;
  dt date:='2099-11-05'; base_no bigint:=-700000000000000000-(random()*1000000)::bigint;
 begin
@@ -83,13 +83,16 @@ begin
    jsonb_build_object('product',bones,'unit','kg','direction','in','quantity','4')));
  perform public.save_operation(next_cut,'production',data,true);
  perform pg_temp.check_processing((select balance::numeric=19 from public.stock_balances where product_id=fillet),'karkas dapat diolah lagi menjadi fillet');
- perform pg_temp.reject_processing(format('select public.reverse_document(%L,%L,%L,%L,%L)',gen_random_uuid(),'operation',cut,dt,'Koreksi induk'),'tidak cukup');
+ perform pg_temp.reject_processing(format('select public.reverse_document(%L,%L,%L,%L,%L)',gen_random_uuid(),'operation',cut,dt,'Koreksi induk'),'sudah dipakai');
  perform public.reverse_document(gen_random_uuid(),'operation',next_cut,dt,'Koreksi proses lanjutan');
  perform pg_temp.check_processing((select balance::numeric=30 from public.stock_balances where product_id=carcass),'koreksi proses mengembalikan bahan');
  sale_data:=jsonb_build_object('date',dt,'partner',partner,'items',jsonb_build_array(jsonb_build_object('product',carcass,'unit','kg','quantity','10','price','40000')));
  perform public.save_operation(carcass_sale,'sale',sale_data,true);
  select id into line_id from public.operation_items where operation_id=carcass_sale;
- perform public.save_operation(gen_random_uuid(),'sale_return',jsonb_build_object('date',dt,'source',carcass_sale,'note','Uji retur karkas','items',jsonb_build_array(jsonb_build_object('source_item',line_id,'quantity','10'))),true);
+ perform public.save_operation(carcass_return,'sale_return',jsonb_build_object('date',dt,'source',carcass_sale,'note','Uji retur karkas','items',jsonb_build_array(jsonb_build_object('source_item',line_id,'quantity','10'))),true);
+ -- Kembalikan rantai transaksi yang salah dari hilir; retur tidak membuat penjualan asal batal.
+ perform public.reverse_document(gen_random_uuid(),'operation',carcass_return,dt,'Batalkan retur uji');
+ perform public.reverse_document(gen_random_uuid(),'operation',carcass_sale,dt,'Batalkan penjualan uji');
  perform public.reverse_document(gen_random_uuid(),'operation',cut,dt,'Koreksi hasil potong');
  perform pg_temp.check_processing((select balance::numeric=76 from public.stock_balances where product_id=live),'koreksi hasil potong mengembalikan 50 kg');
  summary:=public.processing_summary(dt,dt);

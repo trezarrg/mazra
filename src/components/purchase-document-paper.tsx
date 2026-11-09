@@ -23,7 +23,7 @@ export function PurchaseDocumentPaper({ data: d }: { data: PurchaseDocumentData 
 
     <section className="paper-weights" aria-label="Rincian timbang">
       <div><span>Berat asal</span><strong>{d.originWeight ? `${formatDecimal(d.originWeight)} kg` : "Tidak dicatat"}</strong></div>
-      <div><span>Netto diterima</span><strong>{formatDecimal(d.actualWeight)} kg</strong></div>
+      <div><span>Berat diterima{d.measurement?.weight_source==="supplier"?" (supplier)":""}</span><strong>{d.measurement?.weight_source==="estimated"?"± ":""}{formatDecimal(d.actualWeight)} kg</strong>{d.measurement?.count&&<small>{d.measurement.count_source==="estimated"?"± ":""}{formatDecimal(d.measurement.count)} {d.measurement.count_unit??"ekor/pcs"}</small>}{d.variant&&<small>{d.variant}</small>}</div>
       <div><span>{d.priceMethod === "borongan" ? "Dasar tagihan" : "Ditagihkan"}</span><strong>{d.billingQuantity ? `${formatDecimal(d.billingQuantity)} ${d.priceMethod}` : "Borongan"}</strong></div>
     </section>
 

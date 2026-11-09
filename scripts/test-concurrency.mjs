@@ -9,7 +9,7 @@ import {createServerClient} from '@supabase/ssr';
 const exec=promisify(execFile);
 assert.equal(readFileSync('supabase/.temp/project-ref','utf8').trim(),'vcephhquqtppxuvypeft','Proyek tujuan berbeda');
 const dir=mkdtempSync(join(tmpdir(),'ayam-concurrency-'));
-const ids=Object.fromEntries(['auth','product','customer','supplier','account','order','receipt','sale','race1','race2','pay1','pay2','pay3'].map(name=>[name,randomUUID()]));
+const ids=Object.fromEntries(['auth','product','customer','supplier','account','order','receipt','sale','race1','race2','pay1','pay2','pay3','count1','count2','loss'].map(name=>[name,randomUUID()]));
 const env=Object.fromEntries(readFileSync('.env.local','utf8').split(/\r?\n/).filter(l=>l.includes('=')&&!l.trim().startsWith('#')).map(l=>{const i=l.indexOf('=');return [l.slice(0,i).trim(),l.slice(i+1).trim().replace(/^['"]|['"]$/g,'')];}));
 const supabaseUrl=env.NEXT_PUBLIC_SUPABASE_URL;const key=env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 assert.equal(new URL(supabaseUrl).hostname,'vcephhquqtppxuvypeft.supabase.co');
@@ -31,14 +31,15 @@ create temporary table cleanup_ids as
  select id::text from public.cash_movements where account_id='${ids.account}' union
  select id::text from public.operation_items where product_id='${ids.product}' union
  select unnest(array[${Object.values(ids).map(id=>`'${id}'`).join(',')}]);
-delete from public.payments where source_id in ('${ids.sale}','${ids.race1}','${ids.race2}');
+delete from public.payments where source_id in ('${ids.sale}','${ids.race1}','${ids.race2}','${ids.count1}','${ids.count2}','${ids.loss}');
 delete from public.operation_items where product_id='${ids.product}';
-delete from public.operations where id in ('${ids.sale}','${ids.race1}','${ids.race2}');
+delete from public.operations where id in ('${ids.sale}','${ids.race1}','${ids.race2}','${ids.count1}','${ids.count2}','${ids.loss}');
 delete from public.purchase_receipts where do_id='${ids.order}';
 delete from public.purchase_dos where id='${ids.order}';
 delete from public.stock_movements where product_id='${ids.product}';
 delete from public.cash_movements where account_id='${ids.account}';
 delete from public.stock_valuation_balances where product_id='${ids.product}';
+delete from public.stock_count_baselines where product_id='${ids.product}';
 delete from public.product_units where product_id='${ids.product}';
 delete from public.products where id='${ids.product}';
 delete from public.cash_accounts where id='${ids.account}';
@@ -72,6 +73,20 @@ try {
  const verification=await query(`select json_build_object('stock',(select sum(quantity) from public.stock_movements where product_id='${ids.product}'),'sales',(select count(*) from public.operations where id in ('${ids.sale}','${ids.race1}','${ids.race2}')),'payments',(select count(*) from public.payments where source_id='${ids.sale}'),'cash',(select sum(amount) from public.cash_movements where account_id='${ids.account}'),'balance',(select balance_amount from public.obligations where source_id='${ids.sale}'),'cogs',(select sum(v.cogs) from public.stock_valuation v join public.stock_movements m on m.id=v.movement_id where m.product_id='${ids.product}'),'inventory_value',(select value from public.stock_valuation_balances where product_id='${ids.product}')) result;`);
  assert.deepEqual(rows(verification.stdout)[0].result,{stock:200,sales:2,payments:2,cash:1000,balance:0,cogs:8000,inventory_value:2000});
  console.log('Lulus: retry paralel, perebutan stok, batas pembayaran paralel, dan saldo akhir.');
+ await query(`begin;
+ update public.products set count_unit='ekor' where id='${ids.product}';
+ select set_config('request.jwt.claim.sub',(select id::text from public.profiles where active and role in ('developer','owner') limit 1),true);
+ select public.set_stock_count_baseline(gen_random_uuid(),'${ids.product}',null,10,'counted','Hitungan fixture paralel');
+ commit;`);
+ const date=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Jakarta'}).format(new Date());
+ const countSales=await Promise.all([ids.count1,ids.count2].map(id=>post('save_operation',{p_id:id,p_kind:'sale',p_final:true,p_data:{date,partner:ids.customer,items:[{product:ids.product,unit:'kg',quantity:'1',count:'7',count_unit:'ekor',weight_source:'measured',count_source:'counted',price:'10'}]}})));
+ assert.equal(countSales.filter(r=>r.ok).length,1,JSON.stringify(countSales));
+ assert.match(countSales.find(r=>!r.ok).message,/jumlah|cukup/i);
+ const counted=await query(`select balance,count_balance from public.stock_measured_balances where product_id='${ids.product}';`);
+ assert.equal(Number(rows(counted.stdout)[0].balance),199);assert.equal(Number(rows(counted.stdout)[0].count_balance),3);
+ console.log('Lulus: jumlah ekor paralel ditolak saat tidak cukup walaupun kg masih tersedia.');
+ const loss=await post('save_operation',{p_id:ids.loss,p_kind:'adjustment',p_final:true,p_data:{date,stock_event:'loss',loss_reason:'housing_death',location:'Kandang',note:'Fixture kehilangan',items:[{product:ids.product,unit:'kg',quantity:'1',count:'1',count_unit:'ekor',weight_source:'measured',count_source:'counted',direction:'out'}]}});
+ assert.ok(loss.ok,loss.message);
  const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
  const evidence=await db.storage.from('transaction-evidence').upload(storagePath,image,{contentType:'image/png'});assert.equal(evidence.error,null,evidence.error?.message);uploaded=true;
  const attachment=await db.from('document_attachments').insert({source_id:ids.sale,storage_path:storagePath,file_name:'uat.png',created_by:ids.auth});assert.equal(attachment.error,null,attachment.error?.message);
@@ -80,8 +95,8 @@ try {
  console.log('Lulus: unggah bukti privat, metadata, tautan sementara, dan penolakan sumber tidak sah.');
  if(process.env.AYAM_TEST_BASE_URL){
    const cookie=Array.from(jar,([name,value])=>`${name}=${value}`).join('; ');
-   const paths=['/','/penjualan?period=all','/pembelian?period=all','/penerimaan?period=all','/produksi?period=all','/stok','/stok?tab=riwayat&period=all','/keuangan?period=all','/tagihan','/tagihan?status=today','/tagihan?status=tomorrow','/tagihan?status=overdue','/tagihan?status=unscheduled','/riwayat?period=all','/riwayat?tab=pembelian&period=all','/sdm','/aset','/akuntansi','/akuntansi?tab=laba','/akuntansi?tab=neraca','/akuntansi?tab=modal','/analisis','/lainnya','/data','/dokumen?status=unpaid',`/dokumen/${ids.sale}`];
-   for(const path of paths){const response=await fetch(new URL(path,process.env.AYAM_TEST_BASE_URL),{headers:{cookie}});assert.equal(response.status,200,`HTTP ${path}`);const html=await response.text();assert.ok(html.includes('Lewati ke konten'),`Halaman aplikasi tidak dimuat: ${path}`);const visible=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ');assert.ok(!/Data tidak dapat dimuat|Laporan tidak dapat dimuat|Sebagian ringkasan tidak dapat dimuat|Dokumen tidak dapat dimuat|Pengingat belum dapat dimuat|Kinerja usaha belum dapat dimuat/.test(visible),`Kesalahan data pada ${path}`);}
+   const paths=['/','/penjualan?period=all','/pembelian?period=all','/penerimaan?period=all','/produksi?period=all','/stok','/stok/kehilangan','/stok?tab=riwayat&period=all','/keuangan?period=all','/tagihan','/tagihan?status=today','/tagihan?status=tomorrow','/tagihan?status=overdue','/tagihan?status=unscheduled','/riwayat?period=all','/riwayat?tab=pembelian&period=all','/sdm','/aset','/akuntansi','/akuntansi?tab=laba','/akuntansi?tab=neraca','/akuntansi?tab=modal','/analisis','/lainnya','/data','/dokumen?status=unpaid',`/dokumen/${ids.sale}`,`/dokumen/${ids.loss}`];
+   for(const path of paths){const response=await fetch(new URL(path,process.env.AYAM_TEST_BASE_URL),{headers:{cookie}});assert.equal(response.status,200,`HTTP ${path}`);const html=await response.text();assert.ok(html.includes('Lewati ke konten'),`Halaman aplikasi tidak dimuat: ${path}`);if(path===`/dokumen/${ids.loss}`)assert.match(html,/Kerugian Rp10/,'Dokumen kehilangan menampilkan nilai modal');const visible=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ');assert.ok(!/Data tidak dapat dimuat|Laporan tidak dapat dimuat|Sebagian ringkasan tidak dapat dimuat|Dokumen tidak dapat dimuat|Pengingat belum dapat dimuat|Kinerja usaha belum dapat dimuat/.test(visible),`Kesalahan data pada ${path}`);}
    const retired=await fetch(new URL('/setoran',process.env.AYAM_TEST_BASE_URL),{headers:{cookie},redirect:'manual'});
    const redirected=retired.headers.get('location')||'';
    const retiredBody=await retired.text();

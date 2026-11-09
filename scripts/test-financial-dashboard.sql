@@ -159,11 +159,12 @@ begin
  execute 'set constraints stock_valuation_flush deferred';
  perform pg_temp.check_finance((select sum(cogs)=30 from public.stock_valuation v join public.stock_movements m on m.id=v.movement_id where m.source_id=event_id),'trigger commit atomik menghitung HPP tanpa pemanggilan manual');
  perform pg_temp.check_finance(public.dashboard_reminders()->>'today'=((now() at time zone 'Asia/Jakarta')::date)::text,'RPC publik mengikuti tanggal Jakarta');
- -- Undo processing after a partial sale from a mixed pool. Original cost is retained;
- -- the average-cost variance must reconcile inventory instead of silently losing value.
+ -- Public corrections reject a process whose output is already used. Separately
+ -- exercise the private valuation engine to keep coverage of mixed-pool variance.
  before_s:=public.business_summary(dt,dt);
  event_id:=gen_random_uuid();
- perform public.reverse_document(event_id,'operation',process2,dt,'Koreksi olah lanjutan');
+ perform pg_temp.reject_finance(format('select public.reverse_document(%L,%L,%L,%L,%L)',event_id,'operation',process2,dt,'Koreksi olah lanjutan'),'sudah dipakai');
+ perform public.reverse_document_legacy(event_id,'operation',process2,dt,'Uji internal selisih modal');
  execute 'set constraints stock_valuation_flush immediate';
  execute 'set constraints stock_valuation_flush deferred';
  perform pg_temp.check_finance((select sum(value)=0 from public.stock_valuation v join public.stock_movements m on m.id=v.movement_id where m.source_id=event_id),'koreksi tetap membalik modal proses asal');

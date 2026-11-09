@@ -30,12 +30,12 @@ export async function savePartner(data: FormData) {
 }
 export async function saveProduct(data: FormData) {
   const finish = (error?: string) => complete(data, error, "produk");
-  const fail = (error: { message: string } | null) => { if(error) finish("Data tidak dapat disimpan. Periksa isian dan coba lagi."); };
+  const fail = (error: { message: string; code?:string } | null) => { if(error) finish(error.code==="P0001"?error.message:"Data tidak dapat disimpan. Periksa isian dan coba lagi."); };
   const { db } = await requireAccess(["developer", "owner", "admin"]);
   const id = text(data, "id"), name = text(data, "name");
   const units = data.getAll("units").map(unit => String(unit));
   if (!name || !units.length) finish("Isi nama produk dan pilih sedikitnya satu satuan.");
-  const { error } = await db.rpc("save_product", { p_id: id || null, p_name: name, p_units: units, p_active: data.has("active") });
+  const { error } = await db.rpc("save_product_measured", { p_id: id || null, p_name: name, p_units: units, p_active: data.has("active"),p_measurement:{count_unit:optional(data,"count_unit"),kg_per_count:optional(data,"kg_per_count"),allow_estimates:data.has("allow_estimates"),shelf_life_days:optional(data,"shelf_life_days")} });
   if (error?.message.includes("Satuan yang sudah memiliki gerakan stok")) finish("Satuan yang sudah memiliki gerakan stok tidak dapat dilepas.");
   fail(error); finish();
 }
@@ -50,12 +50,11 @@ export async function saveUnit(data: FormData) {
 }
 export async function saveVariant(data: FormData) {
   const finish = (error?: string) => complete(data, error, "produk");
-  const fail = (error: { message: string } | null) => { if(error) finish("Data tidak dapat disimpan. Periksa isian dan coba lagi."); };
+  const fail = (error: { message: string; code?:string } | null) => { if(error) finish(error.code==="P0001"?error.message:"Data tidak dapat disimpan. Periksa isian dan coba lagi."); };
   const { db } = await requireAccess(["developer", "owner", "admin"]);
   const product_id = text(data, "product_id"), name = text(data, "name"), id = text(data, "id");
   if (!product_id || !name) finish("Isi nama varian.");
-  const value = { product_id, name, active: data.has("active") };
-  const { error } = id ? await db.from("product_variants").update(value).eq("id", id).eq("product_id", product_id) : await db.from("product_variants").insert(value);
+  const { error } = await db.rpc("save_variant_measured",{p_id:id||null,p_product:product_id,p_name:name,p_active:data.has("active"),p_ratio:optional(data,"kg_per_count")});
   fail(error); finish();
 }
 export async function saveAccount(data: FormData) {

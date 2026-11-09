@@ -8,11 +8,12 @@ import { DatePicker } from "./date-picker";
 import { Sheet } from "./sheet";
 import { SubmitButton } from "./submit-button";
 import { PurchaseReturnForm } from "./purchase-return-form";
+import type {MeasurementProduct} from "@/lib/measurement";
 
 export type ManagedPayment = { id: string; payment_date: string; amount: string; account_name: string; note: string | null; reversed_by: string | null; account_id?:string };
 export type ManagedReturn = { id: string; document_no: number; operation_date: string; amount: string; status: string; reversed_by: string | null };
 
-export function PurchaseDocumentManagement({ source, today, payments, returns, remainingWeight, remainingAmount, balance, price, method, accounts, manage, error,cancelled=false }: { source: string; today: string; payments: ManagedPayment[]; returns: ManagedReturn[]; remainingWeight: string; remainingAmount: string; balance: string; price: string; method: string; accounts: Option[]; manage?: string; error?: string;cancelled?:boolean }) {
+export function PurchaseDocumentManagement({ source, today, payments, returns, remainingWeight, remainingAmount, balance, price, method, accounts, manage, error,cancelled=false,product,variant,stockReference }: { source: string; today: string; payments: ManagedPayment[]; returns: ManagedReturn[]; remainingWeight: string; remainingAmount: string; balance: string; price: string; method: string; accounts: Option[]; manage?: string; error?: string;cancelled?:boolean;product?:MeasurementProduct;variant?:string;stockReference?:string }) {
   const path = `/dokumen/pembelian/${source}`;
   const activePayments = payments.filter(p => !p.reversed_by);
   return <details className="document-management" open={!!manage && !!error}>
@@ -29,7 +30,7 @@ export function PurchaseDocumentManagement({ source, today, payments, returns, r
       <section className="document-management-card"><h3>Barang dikembalikan</h3><p>Untuk barang yang benar-benar dikembalikan ke supplier. Stok dan nilai tagihan akan disesuaikan.</p>
         {Number(remainingWeight) > 0 ? <Sheet title="Retur barang ke supplier" trigger="Catat retur barang" className="button button-secondary" initialOpen={manage === "return" && !!error}>
           {manage === "return" && error && <p className="notice is-error" role="alert">{error}</p>}
-          <PurchaseReturnForm id={randomUUID()} source={source} today={today} remainingWeight={remainingWeight} remainingAmount={remainingAmount} balance={balance} price={price} method={method} accounts={accounts} returnTo={`${path}?manage=return`}/>
+          <PurchaseReturnForm product={product} variant={variant} stockReference={stockReference} id={randomUUID()} source={source} today={today} remainingWeight={remainingWeight} remainingAmount={remainingAmount} balance={balance} price={price} method={method} accounts={accounts} returnTo={`${path}?manage=return`}/>
         </Sheet> : <p>Seluruh barang dari penerimaan ini sudah diretur.</p>}
       </section>
     </div>}

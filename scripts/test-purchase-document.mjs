@@ -80,11 +80,11 @@ try {
   const cryptoStub = join(temporary, 'crypto.ts');
   await writeFile(cryptoStub, `export const randomUUID=()=>crypto.randomUUID();`);
   const entry = join(temporary, 'entry.tsx');
-  await writeFile(entry, `import React from 'react'; import {createRoot} from 'react-dom/client'; import {PurchaseDocumentView} from ${JSON.stringify(join(root, 'src/components/purchase-document-view.tsx'))}; import {PurchaseReturnForm} from ${JSON.stringify(join(root, 'src/components/purchase-return-form.tsx'))}; import {PurchaseDocumentManagement} from ${JSON.stringify(join(root, 'src/components/purchase-document-management.tsx'))}; import {ReceivingQueue} from ${JSON.stringify(join(root, 'src/app/penerimaan/queue-list.tsx'))}; import {OperationForm} from ${JSON.stringify(join(root, 'src/components/operation-form.tsx'))}; import {ProcessingForm} from ${JSON.stringify(join(root, 'src/components/processing-form.tsx'))}; import {Sheet} from ${JSON.stringify(join(root, 'src/components/sheet.tsx'))}; import {SheetFeedbackFixture} from ${JSON.stringify(join(root, 'scripts/fixtures/sheet-feedback.tsx'))}; import {FinancialDashboardFixture} from ${JSON.stringify(join(root, 'scripts/fixtures/financial-dashboard.tsx'))}; import {FormValidation} from ${JSON.stringify(join(root, 'src/components/form-validation.tsx'))}; const validationHost=document.createElement('div');document.body.append(validationHost);createRoot(validationHost).render(<FormValidation/>); const root=createRoot(document.getElementById('root')); const data=${JSON.stringify(fixture)}; window.setDocumentData=patch=>{Object.assign(data,patch); root.render(<div className="purchase-document"><PurchaseDocumentView key={JSON.stringify(data)} data={{...data}}/><PurchaseDocumentManagement source={data.id} today="2026-11-05" payments={data.payments.filter(p=>p.kind==='payment').map(p=>({id:p.id,payment_date:p.date,amount:p.amount,account_name:p.account,note:p.note,reversed_by:null}))} returns={[]} remainingWeight="99" remainingAmount={data.total} balance={data.balance} price={data.unitPrice} method={data.priceMethod} accounts={[{value:'cash',label:'Kas kantor'}]}/></div>)}; window.showReturnForm=()=>root.render(<PurchaseReturnForm id="fixture-return" source="fixture-receipt" today="2026-11-05" remainingWeight="99" remainingAmount="2970000.00" balance="0.00" price="30000.00" method="kg" accounts={[{value:'cash',label:'Kas kantor'}]} returnTo="/fixture"/>); window.showReceivingQueue=empty=>root.render(<div className="list-card"><ReceivingQueue today="2026-11-05" tasks={empty?[]:[{id:'11111111-1111-4111-8111-111111111111',document_no:31,purchase_date:'2026-11-05',supplier_name:'Supplier Contoh',product_name:'Ayam hidup',origin:'Kandang A',estimated_weight:'200.000'},{id:'22222222-2222-4222-8222-222222222222',document_no:32,purchase_date:'2026-11-04',supplier_name:'Supplier Kedua',product_name:'Ayam hidup',origin:null,estimated_weight:null}]}/></div>); window.showProcessing=()=>root.render(<Sheet title="Catat hasil potong" trigger="Catat hasil potong"><ProcessingForm id="fixture-processing" today="2026-11-05" choices={[{key:'live:',product:'live',variant:'',label:'Ayam hidup',balance:'100'},{key:'carcass:',product:'carcass',variant:'',label:'Karkas',balance:'30'},{key:'fillet:',product:'fillet',variant:'',label:'Dada fillet',balance:'5'}]} returnTo="/stok?tab=potong"/></Sheet>); window.showCountSale=initial=>root.render(<Sheet key={initial?"resume":"new"} wide title="Penjualan baru" trigger="Tambah"><OperationForm id={initial?"fixture-resumed-sale":"fixture-count-sale"} initial={initial} kind="sale" today="2026-11-05" returnTo="/penjualan" options={{products:[{id:'live',name:'Ayam hidup',product_units:[{unit:'kg'},{unit:'ekor'}],product_variants:[{id:'large',name:'Ukuran besar',active:true}]}],partners:[{value:'customer',label:'Pelanggan contoh'}],accounts:[{value:'cash',label:'Kas kantor'}],drivers:[{value:'driver',label:'Sopir contoh'}]}}/></Sheet>); window.showCountReturn=()=>root.render(<OperationForm id="fixture-count-return" kind="sale_return" today="2026-11-05" returnTo="/penjualan" initial={{source:'original-sale'}} sourceItems={[{value:'sale-line',label:'Ayam hidup - 10 ekor / 20 kg',unit:'ekor'}]} options={{products:[],partners:[],accounts:[]}}/>); window.showSheetFeedback=()=>{window.feedbackVersion=0;window.feedbackSubmissions=0;window.sheetFeedbackOutcome='error';history.replaceState(null,'','/produksi?period=all');root.render(<SheetFeedbackFixture version={0}/>);};window.sheetFeedbackNavigation=outcome=>{window.feedbackVersion++;history.replaceState(null,'','/produksi?period=all&'+(outcome==='error'?'error='+encodeURIComponent('Stok Dada tidak cukup.'):'ok=1')+'&r='+window.feedbackVersion);root.render(<SheetFeedbackFixture version={window.feedbackVersion} initialOpen={outcome==='success'}/>);};window.remountSheetFeedback=()=>root.render(<SheetFeedbackFixture key="remounted" version={99} initialOpen/>); window.showFinancialDashboard=mode=>{history.replaceState(null,"","/?period=month&month=2026-11");root.render(<FinancialDashboardFixture mode={mode}/>)}; window.setDocumentData({});`);
+  await writeFile(entry, `import React from 'react'; import {createRoot} from 'react-dom/client'; import {PurchaseDocumentView} from ${JSON.stringify(join(root, 'src/components/purchase-document-view.tsx'))}; import {PurchaseReturnForm} from ${JSON.stringify(join(root, 'src/components/purchase-return-form.tsx'))}; import {PurchaseDocumentManagement} from ${JSON.stringify(join(root, 'src/components/purchase-document-management.tsx'))}; import {ReceivingQueue} from ${JSON.stringify(join(root, 'src/app/penerimaan/queue-list.tsx'))}; import {OperationForm} from ${JSON.stringify(join(root, 'src/components/operation-form.tsx'))}; import {ProcessingForm} from ${JSON.stringify(join(root, 'src/components/processing-form.tsx'))}; import {Sheet} from ${JSON.stringify(join(root, 'src/components/sheet.tsx'))}; import {SheetFeedbackFixture} from ${JSON.stringify(join(root, 'scripts/fixtures/sheet-feedback.tsx'))}; import {FinancialDashboardFixture} from ${JSON.stringify(join(root, 'scripts/fixtures/financial-dashboard.tsx'))}; import {StockMeasurementsFixture} from ${JSON.stringify(join(root, 'scripts/fixtures/stock-measurements.tsx'))}; import {SaleDocumentFixture} from ${JSON.stringify(join(root, 'scripts/fixtures/sale-document.tsx'))}; import {FormValidation} from ${JSON.stringify(join(root, 'src/components/form-validation.tsx'))}; const validationHost=document.createElement('div');document.body.append(validationHost);createRoot(validationHost).render(<FormValidation/>); const root=createRoot(document.getElementById('root')); const data=${JSON.stringify(fixture)}; window.setDocumentData=patch=>{Object.assign(data,patch); root.render(<div className="purchase-document"><PurchaseDocumentView key={JSON.stringify(data)} data={{...data}}/><PurchaseDocumentManagement source={data.id} today="2026-11-05" payments={data.payments.filter(p=>p.kind==='payment').map(p=>({id:p.id,payment_date:p.date,amount:p.amount,account_name:p.account,note:p.note,reversed_by:null}))} returns={[]} remainingWeight="99" remainingAmount={data.total} balance={data.balance} price={data.unitPrice} method={data.priceMethod} accounts={[{value:'cash',label:'Kas kantor'}]}/></div>)}; window.showReturnForm=()=>root.render(<PurchaseReturnForm id="fixture-return" source="fixture-receipt" today="2026-11-05" remainingWeight="99" remainingAmount="2970000.00" balance="0.00" price="30000.00" method="kg" accounts={[{value:'cash',label:'Kas kantor'}]} returnTo="/fixture"/>); window.showReceivingQueue=empty=>root.render(<div className="list-card"><ReceivingQueue today="2026-11-05" tasks={empty?[]:[{id:'11111111-1111-4111-8111-111111111111',document_no:31,purchase_date:'2026-11-05',supplier_name:'Supplier Contoh',product_name:'Ayam hidup',origin:'Kandang A',estimated_weight:'200.000'},{id:'22222222-2222-4222-8222-222222222222',document_no:32,purchase_date:'2026-11-04',supplier_name:'Supplier Kedua',product_name:'Ayam hidup',origin:null,estimated_weight:null}]}/></div>); window.showProcessing=()=>root.render(<Sheet title="Catat hasil potong" trigger="Catat hasil potong"><ProcessingForm id="fixture-processing" today="2026-11-05" choices={[{key:'live:',product:'live',variant:'',label:'Ayam hidup',balance:'100'},{key:'carcass:',product:'carcass',variant:'',label:'Karkas',balance:'30'},{key:'fillet:',product:'fillet',variant:'',label:'Dada fillet',balance:'5'}]} returnTo="/stok?tab=potong"/></Sheet>); window.showCountSale=initial=>root.render(<Sheet key={initial?"resume":"new"} wide title="Penjualan baru" trigger="Tambah"><OperationForm id={initial?"fixture-resumed-sale":"fixture-count-sale"} initial={initial} kind="sale" today="2026-11-05" returnTo="/penjualan" options={{products:[{id:'live',name:'Ayam hidup',product_units:[{unit:'kg'},{unit:'ekor'}],product_variants:[{id:'large',name:'Ukuran besar',active:true}]}],partners:[{value:'customer',label:'Pelanggan contoh'}],accounts:[{value:'cash',label:'Kas kantor'}],drivers:[{value:'driver',label:'Sopir contoh'}]}}/></Sheet>); window.showCountReturn=()=>root.render(<OperationForm id="fixture-count-return" kind="sale_return" today="2026-11-05" returnTo="/penjualan" initial={{source:'original-sale'}} sourceItems={[{value:'sale-line',label:'Ayam hidup - 10 ekor / 20 kg',unit:'ekor'}]} options={{products:[],partners:[],accounts:[]}}/>); window.showSheetFeedback=()=>{window.feedbackVersion=0;window.feedbackSubmissions=0;window.sheetFeedbackOutcome='error';history.replaceState(null,'','/produksi?period=all');root.render(<SheetFeedbackFixture version={0}/>);};window.sheetFeedbackNavigation=outcome=>{window.feedbackVersion++;history.replaceState(null,'','/produksi?period=all&'+(outcome==='error'?'error='+encodeURIComponent('Stok Dada tidak cukup.'):'ok=1')+'&r='+window.feedbackVersion);root.render(<SheetFeedbackFixture version={window.feedbackVersion} initialOpen={outcome==='success'}/>);};window.remountSheetFeedback=()=>root.render(<SheetFeedbackFixture key="remounted" version={99} initialOpen/>); window.showFinancialDashboard=mode=>{history.replaceState(null,"","/?period=month&month=2026-11");root.render(<FinancialDashboardFixture mode={mode}/>)}; window.showStockMeasurements=mode=>root.render(<StockMeasurementsFixture key={mode} mode={mode}/>); window.showSaleDocument=cancelled=>root.render(<SaleDocumentFixture cancelled={cancelled}/>); window.setDocumentData({});`);
   const result = await build({
     configFile: false, root, logLevel: 'silent',
     resolve: { alias: { 'next/image': imageStub, 'next/link': linkStub, 'next/navigation': navigationStub, 'node:crypto': cryptoStub, '@/app/operasi/actions': actionStub, '@': join(root, 'src'), 'react-dom': join(root, 'node_modules/react-dom'), react: join(root, 'node_modules/react') } },
-    define: { 'process.env.NODE_ENV': JSON.stringify('production') },
+    define: { 'process.env.NODE_ENV': JSON.stringify('production'), 'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify(''), 'process.env.NEXT_PUBLIC_BUSINESS_NAME': JSON.stringify('Usaha Ayam Potong Contoh'), 'process.env.NEXT_PUBLIC_BUSINESS_LOGO': JSON.stringify('/Logo.png') },
     oxc: { jsx: { runtime: 'automatic' } },
     build: { write: false, minify: false, lib: { entry, formats: ['es'], fileName: () => 'preview.js' } },
   });
@@ -127,6 +127,7 @@ try {
   await send('Page.addScriptToEvaluateOnNewDocument', { source: `window.fixtureErrors=[];addEventListener('error',event=>window.fixtureErrors.push(String(event.error?.stack || event.message)));` });
   await send('Emulation.setDeviceMetricsOverride', { width: 1200, height: 1000, deviceScaleFactor: 1, mobile: false });
   await send('Page.navigate', { url: `http://127.0.0.1:${server.address().port}` });
+  if (!process.env.AYAM_DOCUMENT_ONLY) {
   await waitFor(`document.querySelector('.document-share-buttons') && !Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()==='Salin gambar').disabled`);
   assert.equal(await evaluate(`document.querySelector('.purchase-paper').textContent.includes('Lunas')`), true);
   assert.equal(await evaluate(`document.querySelector('.document-export-surface').textContent.includes('Kelola transaksi')`), false);
@@ -227,7 +228,7 @@ try {
   assert.equal(await evaluate(`document.querySelector('dialog[open]').textContent.includes('Pilih DO')`), false);
   await evaluate(`document.querySelector('dialog[open] input[name="origin_weight"]').previousElementSibling.focus()`);
   await send('Input.insertText', { text: '200' });
-  await evaluate(`document.querySelector('dialog[open] input[name="actual_weight"]').previousElementSibling.focus()`);
+  await evaluate(`document.querySelector('dialog[open] input[name="_receipt_weight"]').previousElementSibling.focus()`);
   await send('Input.insertText', { text: '195,25' });
   await waitFor(`document.querySelector('dialog[open] input[name="actual_weight"]').value==='195.25'`);
   await evaluate(`document.querySelector('dialog[open] textarea[name="note"]').focus()`);
@@ -253,7 +254,7 @@ try {
   assert.equal(await evaluate(`document.querySelector('dialog[open]').textContent.includes('Jenis item')`),false);
   await evaluate(`document.querySelector('input[name="_weight"]').previousElementSibling.focus()`);
   await send('Input.insertText',{text:'50'});
-  await evaluate(`document.querySelector('input[name="_count"]').previousElementSibling.focus()`);
+  await evaluate(`document.querySelector('input[name="_input_count"]').previousElementSibling.focus()`);
   await send('Input.insertText',{text:'25'});
   await click('Pilih hasil');
   await clickSelector('.dropdown-menu [role="option"]:nth-child(2)');
@@ -281,13 +282,13 @@ try {
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
   await evaluate(`document.querySelector('button[aria-label="Hapus hasil 2"]').scrollIntoView({block:'center'})`);
   assert.equal(await evaluate(`(()=>{const b=document.querySelector('button[aria-label="Hapus hasil 2"]');return b.getBoundingClientRect().width<=32 && b.closest('.processing-result-row').getBoundingClientRect().height<=60;})()`),true,'Produk dan berat berada dalam baris ringkas.');
-  assert.equal(await evaluate(`document.querySelector('input[name="_pieces_0"]')===null`),true,'Jumlah opsional disembunyikan pada awal.');
+  assert.equal(await evaluate(`document.querySelector('input[name="_pieces_0_count"]')===null`),true,'Jumlah opsional disembunyikan pada awal.');
   await click('Tambah ekor/pcs');
-  await evaluate(`document.querySelector('input[name="_pieces_0"]').previousElementSibling.focus()`);
+  await evaluate(`document.querySelector('input[name="_pieces_0_count"]').previousElementSibling.focus()`);
   await send('Input.insertText',{text:'12'});
-  await waitFor(`document.querySelector('input[name="_pieces_0"]').value==='12'`);
+  await waitFor(`document.querySelector('input[name="_pieces_0_count"]').value==='12'`);
   await click('Sembunyikan ekor/pcs');
-  assert.equal(await evaluate(`document.querySelector('input[name="_pieces_0"]')===null`),true);
+  assert.equal(await evaluate(`document.querySelector('input[name="_pieces_0_count"]')===null`),true);
   assert.equal(await evaluate(`JSON.parse(document.querySelector('input[name="data"]').value).items[1].count`),'12','Jumlah tetap tersimpan saat disembunyikan.');
   await click('Simpan hasil potong');
   await waitFor(`window.postedFixture?.kind==='production'`);
@@ -311,9 +312,9 @@ try {
   await clickSelector('.dropdown-menu [role="option"]:nth-child(2)');
   await clickSelector('select[name="_unit_0"] + button');
   await clickSelector('.dropdown-menu [role="option"]:nth-child(2)');
-  await waitFor(`Boolean(document.querySelector('input[name="_weight_0"]'))`);
-  assert.equal(await evaluate(`document.querySelector('input[name="_weight_0"]').previousElementSibling.required`),true,'Penjualan per ekor wajib berat kg');
-  for(const [name,value] of [['_quantity_0','10'],['_price_0','40000'],['_weight_0','20']]) {
+  await waitFor(`Boolean(document.querySelector('input[name="_sale_0_weight"]'))`);
+  assert.equal(await evaluate(`document.querySelector('input[name="_sale_0_weight"]').previousElementSibling.required`),true,'Penjualan per ekor wajib berat kg');
+  for(const [name,value] of [['_quantity_0','10'],['_price_0','40000'],['_sale_0_weight','20']]) {
     await evaluate(`document.querySelector('input[name="${name}"]').previousElementSibling.focus()`);
     await send('Input.insertText',{text:value});
   }
@@ -345,7 +346,7 @@ try {
   await evaluate(`document.querySelector('.sale-items').scrollIntoView({block:'center'})`);
   await screenshot('sale-form-desktop.png',true);
   assert.equal(await evaluate(`(()=>{const sheet=document.querySelector('dialog[open]'), row=document.querySelector('.sale-item');return sheet.getBoundingClientRect().width<=860 && row.scrollWidth<=row.clientWidth})()`),true,'Tabel penjualan muat dalam popup laptop.');
-  await click('Terbitkan invoice');
+  await click('Terbitkan penjualan');
   await waitFor(`window.postedFixture?.id==='fixture-count-sale'`);
   const saleItem=JSON.parse(await evaluate('window.postedFixture.data')).items[0];
   assert.deepEqual([saleItem.unit,saleItem.quantity,saleItem.weight,saleItem.price],['ekor','10','20','40000']);
@@ -367,8 +368,8 @@ try {
   await waitFor(`Boolean(document.querySelector('select[name="_source_0"]'))`);
   await click('Pilih item asal');
   await clickSelector('.dropdown-menu [role="option"]:nth-child(2)');
-  await waitFor(`Boolean(document.querySelector('input[name="_weight_0"]'))`);
-  assert.equal(await evaluate(`document.querySelector('input[name="_weight_0"]').previousElementSibling.required`),true,'Retur per ekor wajib berat kg');
+  await waitFor(`Boolean(document.querySelector('input[name="_item_0_weight"]'))`);
+  assert.equal(await evaluate(`document.querySelector('input[name="_item_0_weight"]').previousElementSibling.required`),true,'Retur per ekor wajib berat kg');
   assert.ok(await evaluate(`document.body.textContent.includes('Jumlah (ekor)')`));
   await screenshot('sale-return-weight.png',true);
   await evaluate('window.showProcessing()');
@@ -529,6 +530,125 @@ try {
   assert.deepEqual(await evaluate('window.fixtureErrors'), []);
   console.log('Lulus: dashboard ponsel/laptop, prioritas tagih/bayar, batas daftar, pembayaran dan tempo, profit belum lengkap/rugi, serta pembaruan saat popup tertutup.');
   console.log('Lulus: dokumen dan ekspor, pembatalan/retur, antrean timbang, pilihan DO langsung, berat desimal, formulir kosong, serta hasil potong kg dengan ekor opsional.');
+
+  }
+
+  await waitFor("typeof window.showStockMeasurements === 'function'");
+  async function fillMeasurement(name,value) {
+    await evaluate("document.querySelector('input[name=\""+name+"\"]').previousElementSibling.focus()");
+    await send('Input.dispatchKeyEvent',{type:'keyDown',key:'a',code:'KeyA',modifiers:2});
+    await send('Input.dispatchKeyEvent',{type:'keyUp',key:'a',code:'KeyA',modifiers:2});
+    await send('Input.insertText',{text:value});
+  }
+  if(process.env.AYAM_DOCUMENT_ONLY !== 'sale') {
+    await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    await evaluate("window.showStockMeasurements('loss')");
+    await waitFor("Boolean(document.querySelector('input[name=\"_item_0_count\"]'))");
+    await fillMeasurement('_item_0_count','3');
+    await waitFor("JSON.parse(document.querySelector('input[name=\"data\"]').value).items[0].quantity==='3.600'");
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"data\"]').value).items[0].weight_source"),'estimated');
+    assert.equal(await evaluate("document.querySelector('form').checkValidity()"),false,'Perkiraan perlu konfirmasi.');
+    await clickSelector('.measurement-confirm input');
+    assert.equal(await evaluate("document.querySelector('form').checkValidity()"),true);
+    await screenshot('measurement-loss-mobile.png');
+    await clickSelector('.measurement-fields .dropdown-trigger');
+    await clickSelector('.dropdown-menu [role="option"]:nth-child(2)');
+    await waitFor("JSON.parse(document.querySelector('input[name=\"data\"]').value).items[0].quantity==='4.500'");
+    assert.equal(await evaluate("document.querySelector('form').checkValidity()"),false,'Perubahan referensi meminta konfirmasi ulang.');
+    await fillMeasurement('_quantity_0','4,2');
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"data\"]').value).items[0].count"),'3');
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"data\"]').value).items[0].weight_source"),'measured');
+    await click('Catat kehilangan');
+    await waitFor("window.postedFixture?.id==='fixture-measured-loss'");
+    await evaluate("window.showStockMeasurements('receipt')");
+    await waitFor("Boolean(document.querySelector('input[name=\"measurement\"]'))");
+    assert.equal(await evaluate("document.querySelector('input[name=\"actual_weight\"]').value"),'1000');
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"measurement\"]').value).weight_source"),'supplier');
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"measurement\"]').value).count"),'');
+    await fillMeasurement('_receipt_count','500');
+    assert.equal(await evaluate("document.querySelector('input[name=\"actual_weight\"]').value"),'1000','Jumlah tidak menimpa angka supplier.');
+    await screenshot('measurement-receipt-mobile.png');
+    await evaluate("window.showStockMeasurements('processing')");
+    await waitFor("Boolean(document.querySelector('input[name=\"_input_count\"]'))");
+    await fillMeasurement('_input_count','20');
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"data\"]').value).items[0].quantity"),'24.000');
+    await click('Pilih hasil');
+    await clickSelector('.dropdown-menu [role="option"]:nth-child(2)');
+    await fillMeasurement('_quantity_0','20');
+    await waitFor("Boolean(document.querySelector('input[name=\"_pieces_0_count\"]'))");
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"data\"]').value).items[1].count"),'18');
+    await fillMeasurement('_pieces_0_count','20');
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"data\"]').value).items[1].quantity"),'20');
+    await screenshot('measurement-processing-mobile.png');
+    await evaluate("window.showStockMeasurements('sale')");
+    await waitFor("Boolean(document.querySelector('select[name=\"_product_0\"]'))");
+    await click('Pilih produk');await clickSelector('.dropdown-menu [role="option"]:nth-child(2)');
+    await click('Tanpa varian');await clickSelector('.dropdown-menu [role="option"]:nth-child(3)');
+    await fillMeasurement('_quantity_0','50');
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"data\"]').value).items[0].count"),'20','Ukuran besar memakai 2,5 kg/ekor.');
+    await fillMeasurement('_sale_0_count','19');
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"data\"]').value).items[0].quantity"),'50');
+    assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth'),true);
+    await screenshot('measurement-sale-mobile.png');
+    await evaluate("window.showStockMeasurements('delivery')");
+    await waitFor("Boolean(document.querySelector('input[name=\"_qty_line\"]'))");
+    await fillMeasurement('_qty_line','7');
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"items\"]').value)[0].count"),'5');
+    assert.equal(await evaluate("JSON.parse(document.querySelector('input[name=\"items\"]').value)[0].count_source"),'estimated');
+    await screenshot('measurement-delivery-mobile.png');
+    assert.deepEqual(await evaluate('window.fixtureErrors'),[]);
+    console.log('Lulus: kg/jumlah, ukuran kecil/besar, referensi stok, konfirmasi perkiraan, koreksi aktual, penerimaan supplier, hasil potong dan pengiriman pada browser.');
+  }
+  if(process.env.AYAM_DOCUMENT_ONLY !== 'measurements') {
+
+  await waitFor("typeof window.showSaleDocument === 'function'");
+  await evaluate('window.showSaleDocument(false)');
+  await waitFor("document.querySelector('.sale-paper') && !Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()==='Salin gambar').disabled");
+  const paperText=()=>evaluate("document.querySelector('.sale-paper').innerText");
+  assert.match(await paperText(),/INV-000042/);
+  assert.match(await paperText(),/441\.212,5/);
+  assert.match(await paperText(),/Diskon/);
+  assert.match(await paperText(),/Pengurangan retur/);
+  await send('Emulation.setDeviceMetricsOverride',{width:1200,height:1100,deviceScaleFactor:1,mobile:false});
+  await screenshot('sale-invoice-desktop.png');
+  await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await screenshot('sale-invoice-mobile.png');
+  assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth'),true);
+  await clickSelector('.sale-document-options .dropdown-trigger');
+  await clickSelector('[role="option"]:nth-child(2)');
+  await waitFor("Boolean(document.querySelector('.delivery-items'))");
+  assert.match(await paperText(),/SJ-000042/);
+  assert.ok(!(await paperText()).includes('Rp'));
+  assert.ok(!(await paperText()).includes('441.212'));
+  assert.equal(await evaluate("document.querySelectorAll('.purchase-document-stage:not(.document-export-surface) .delivery-signatures > div').length"),2);
+  await screenshot('sale-delivery-mobile.png');
+  await clickSelector('.sale-document-options .dropdown-trigger');
+  await clickSelector('[role="option"]:nth-child(3)');
+  await waitFor("document.querySelector('.thermal-paper') && !Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()==='Salin gambar').disabled");
+  assert.match(await paperText(),/STR-000042/);
+  assert.equal(await evaluate("(()=>{const p=document.querySelector('.thermal-paper');return p.scrollWidth<=Math.ceil(p.getBoundingClientRect().width)})()"),true);
+  await screenshot('sale-thermal-mobile.png');
+  await evaluate("window.print=()=>{window.printRules=Array.from(document.head.querySelectorAll('style')).map(s=>s.textContent).join(' ')}");
+  await click('Cetak / PDF');
+  assert.match(await evaluate('window.printRules'),/size: 58mm \d+mm/);
+  await send('Emulation.setEmulatedMedia',{media:'print'});
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('.sale-document-options')).display"),'none');
+  assert.ok(await evaluate("document.querySelector('.thermal-paper').getBoundingClientRect().width<=48/25.4*96+1"),'Isi struk dibatasi 48 mm di dalam kertas 58 mm.');
+  const thermalPdf=await send('Page.printToPDF',{printBackground:true,preferCSSPageSize:true});
+  const thermalBytes=Buffer.from(thermalPdf.data,'base64');
+  await writeFile(join(output,'sale-thermal-58mm.pdf'),thermalBytes);
+  const mediaBox=thermalBytes.toString('latin1').match(/\/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*\]/);
+  assert.ok(mediaBox,'Ukuran kertas tersedia dalam PDF.');
+  assert.ok(Math.abs(Number(mediaBox[1])-58/25.4*72)<2,'PDF thermal memiliki lebar 58 mm.');
+  assert.equal((thermalBytes.toString('latin1').match(/\/Type\s*\/Page\b/g)||[]).length,1,'Struk pendek tidak terpotong menjadi beberapa halaman.');
+  await evaluate("window.dispatchEvent(new Event('afterprint'))");
+  await send('Emulation.setEmulatedMedia',{media:'screen'});
+  await evaluate('window.showSaleDocument(true)');
+  await waitFor("document.querySelector('.sale-paper').textContent.includes('Dibatalkan')");
+  assert.deepEqual(await evaluate('window.fixtureErrors'),[]);
+  console.log('Lulus: invoice penjualan, SJ tanpa harga, pilihan format, struk PDF 58 mm satu halaman, pembatalan, ekspor dan lebar ponsel.');
+
+  }
   console.log(`Pratinjau: ${output}`);
 } finally {
   if (socket?.readyState === WebSocket.OPEN) { try { await send('Browser.close'); } catch {} socket.close(); }

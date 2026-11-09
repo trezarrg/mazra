@@ -15,6 +15,11 @@
   font-variant-numeric: tabular-nums;
 }
 body { line-height: 1.5; }
+.measurement-fields { display: grid; gap: 10px; min-width: 0; }
+.measurement-fields > label { min-width: 0; }
+.measurement-fields .caption { margin: 0; line-height: 1.6; }
+.measurement-confirm { align-items: flex-start; font-size: 12px; line-height: 1.6; }
+.measurement-confirm input { flex: 0 0 auto; margin-top: 3px; }
 ::selection { background: #cfe2d6; color: #183d2c; }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline-color: #42755c; }
 input:focus, textarea:focus, select:focus { border-color: #71917c; box-shadow: 0 0 0 3px #245b4614; }

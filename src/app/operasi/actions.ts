@@ -10,11 +10,11 @@ const value = (form: FormData, name: string) => String(form.get(name) ?? "").tri
 const optional = (form: FormData, name: string) => value(form,name) || null;
 function returnPath(form: FormData) {
   const path = value(form,"return_to");
-  return /^\/(penjualan|produksi|penerimaan|stok|keuangan|tagihan|akuntansi|sdm|aset|pembelian|dokumen\/(?:pembelian\/)?[0-9a-f-]{36})?(\?[^#]*)?$/.test(path) ? path : "/";
+  return /^\/(penjualan|produksi|penerimaan|stok|keuangan|tagihan|akuntansi|sdm|aset|pembelian|stok\/kehilangan|dokumen\/(?:pembelian\/)?[0-9a-f-]{36})?(\?[^#]*)?$/.test(path) ? path : "/";
 }
 function finish(form: FormData, error?: { message: string; code?: string } | null): never {
   revalidatePath("/dokumen", "layout");
-  for (const path of ["/", "/penjualan", "/pembelian", "/produksi", "/stok", "/keuangan", "/tagihan", "/riwayat", "/akuntansi", "/analisis", "/sdm", "/aset", "/dokumen/[id]"]) revalidatePath(path, path.includes("[") ? "page" : undefined);
+  for (const path of ["/", "/penjualan", "/pembelian", "/produksi", "/stok", "/stok/kehilangan", "/keuangan", "/tagihan", "/riwayat", "/akuntansi", "/analisis", "/sdm", "/aset", "/dokumen/[id]"]) revalidatePath(path, path.includes("[") ? "page" : undefined);
   const path = error ? failureReturnPath(form, returnPath(form)) : returnPath(form);
   const url = new URL(path,"http://localhost"); url.searchParams.delete("error"); url.searchParams.delete("ok");
   // Hanya pesan validasi eksplisit dari fungsi aplikasi boleh tampil; detail SQL disembunyikan.
@@ -45,6 +45,10 @@ export async function saveStockCost(form: FormData) {
   const {db}=await requireAccess(["developer","owner"]);
   const {error}=await db.rpc("save_stock_cost",{p_movement:value(form,"movement"),p_value:value(form,"amount"),p_reason:value(form,"reason")});finish(form,error);
 }
+export async function setStockCount(form:FormData) {
+  const {db}=await requireAccess(["developer","owner"]);
+  const {error}=await db.rpc("set_stock_count_baseline",{p_id:value(form,"id"),p_product:value(form,"product"),p_variant:optional(form,"variant"),p_quantity:value(form,"quantity"),p_source:value(form,"source"),p_reason:value(form,"reason")});finish(form,error);
+}
 export async function cancelDraft(form: FormData) {
   const {db}=await requireAccess([...officeRoles,"production"]);const {error}=await db.rpc("cancel_draft",{p_id:value(form,"id")});finish(form,error);
 }
@@ -63,17 +67,17 @@ export async function cancelDelivery(form: FormData) {
 }
 export async function recordDelivery(form: FormData) {
   const {db}=await requireAccess([...officeRoles,"driver"]);let items:unknown;try{items=JSON.parse(value(form,"items"));}catch{finish(form,{message:"Data pengiriman tidak valid",code:"P0001"});}
-  const {error}=await db.rpc("record_delivery",{p_id:value(form,"id"),p_sale:value(form,"source"),p_date:value(form,"date"),p_stage:value(form,"stage"),p_items:items,p_note:optional(form,"note")});finish(form,error);
+  const {error}=await db.rpc("record_delivery_measured",{p_id:value(form,"id"),p_sale:value(form,"source"),p_date:value(form,"date"),p_stage:value(form,"stage"),p_items:items,p_note:optional(form,"note")});finish(form,error);
 }
 export async function managePurchase(form: FormData) {
   const {db}=await requireAccess(officeRoles); const data:Record<string,string>={};for(const [key,item] of form.entries()) if(typeof item==="string" && key!=="_form_origin")data[key]=item;
-  const {error}=await db.rpc("manage_purchase",{p_id:value(form,"id"),p_action:value(form,"action"),p_data:data});finish(form,error);
+  const {error}=await db.rpc("manage_purchase_measured",{p_id:value(form,"id"),p_action:value(form,"action"),p_data:data});finish(form,error);
 }
 export async function recordMeasurement(form: FormData) {
-  const {db}=await requireAccess([...officeRoles,"production"]);const {error}=await db.rpc("record_queue_measurement",{p_id:value(form,"id"),p_do:value(form,"do_id"),p_date:value(form,"date"),p_origin:optional(form,"origin_weight"),p_actual:value(form,"actual_weight"),p_note:optional(form,"note")});finish(form,error);
+  const {db}=await requireAccess([...officeRoles,"production"]);let measurement:unknown;try{measurement=JSON.parse(value(form,"measurement")||"{}");}catch{finish(form,{code:"P0001",message:"Data pengukuran tidak valid"});}const {error}=await db.rpc("record_queue_measured",{p_id:value(form,"id"),p_do:value(form,"do_id"),p_date:value(form,"date"),p_origin:optional(form,"origin_weight"),p_actual:value(form,"actual_weight"),p_note:optional(form,"note"),p_measurement:measurement});finish(form,error);
 }
 export async function confirmMeasurement(form: FormData) {
-  const {db}=await requireAccess(officeRoles);const {error}=await db.rpc("confirm_measurement",{p_id:value(form,"id"),p_measurement:value(form,"measurement_id"),p_billing:optional(form,"billing_quantity"),p_lump:optional(form,"lump_amount"),p_note:optional(form,"note")});finish(form,error);
+  const {db}=await requireAccess(officeRoles);const {error}=await db.rpc("confirm_queue_measured",{p_id:value(form,"id"),p_measurement:value(form,"measurement_id"),p_billing:optional(form,"billing_quantity"),p_lump:optional(form,"lump_amount"),p_note:optional(form,"note")});finish(form,error);
 }
 export async function cancelMeasurement(form: FormData) {
   const {db}=await requireAccess([...officeRoles,"production"]);const {error}=await db.rpc("cancel_measurement",{p_id:value(form,"id"),p_note:value(form,"note")});finish(form,error);

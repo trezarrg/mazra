@@ -9,10 +9,13 @@ import { DatePicker } from "./date-picker";
 import { Dropdown } from "./dropdown";
 import { NumberInput } from "./number-input";
 import { SubmitButton } from "./submit-button";
+import {MeasurementFields} from "./measurement-fields";
+import {editMeasurement,measurementMetadata,type MeasuredItem,type MeasurementProduct} from "@/lib/measurement";
 
-export function PurchaseReturnForm({ id, source, today, remainingWeight, remainingAmount, balance, price, method, accounts, returnTo }: { id: string; source: string; today: string; remainingWeight: string; remainingAmount: string; balance: string; price: string; method: string; accounts: Option[]; returnTo: string }) {
+export function PurchaseReturnForm({ id, source, today, remainingWeight, remainingAmount, balance, price, method, accounts, returnTo,product,variant="",stockReference="" }: { id: string; source: string; today: string; remainingWeight: string; remainingAmount: string; balance: string; price: string; method: string; accounts: Option[]; returnTo: string;product?:MeasurementProduct;variant?:string;stockReference?:string }) {
   const [date, setDate] = useState(today);
-  const [quantity, setQuantity] = useState("");
+  const [measure,setMeasure]=useState<MeasuredItem>({unit:"kg",quantity:"",weight:"",count:"",variant,stock_reference:stockReference});
+  const quantity=measure.quantity;
   const [agreedAmount, setAgreedAmount] = useState<string | null>(null);
   const [account, setAccount] = useState("");
   const [note, setNote] = useState("");
@@ -25,10 +28,11 @@ export function PurchaseReturnForm({ id, source, today, remainingWeight, remaini
       event.preventDefault(); setError("Jumlah barang atau nilai retur melebihi sisa penerimaan yang dapat dikembalikan.");
     }
   }}>
-    <input type="hidden" name="id" value={id}/><input type="hidden" name="kind" value="purchase_return"/><input type="hidden" name="intent" value="final"/><input type="hidden" name="return_to" value={returnTo}/><input type="hidden" name="data" value={JSON.stringify({ source, date, quantity, amount, account: hasRefund ? account : "", note })}/>
+    <input type="hidden" name="id" value={id}/><input type="hidden" name="kind" value="purchase_return"/><input type="hidden" name="intent" value="final"/><input type="hidden" name="return_to" value={returnTo}/><input type="hidden" name="data" value={JSON.stringify({ source, date, quantity, count:measure.count,...measurementMetadata(measure),amount, account: hasRefund ? account : "", note })}/>
     <p className="form-hint">Gunakan untuk barang yang dikembalikan ke supplier. Barang yang sudah dipakai atau terjual perlu diperiksa terlebih dahulu.</p>
     <DatePicker label="Tanggal pengembalian" name="_date" today={today} defaultValue={today} onValueChange={setDate}/>
-    <label>Berat dikembalikan (kg)<NumberInput name="_quantity" value={quantity} onValueChange={value => { setQuantity(value); setAgreedAmount(null); setError(""); }} required/></label>
+    <label>Berat dikembalikan (kg)<NumberInput name="_quantity" value={quantity} onValueChange={value => { setMeasure(current=>editMeasurement(current,"weight",value,product)); setAgreedAmount(null); setError(""); }} required/></label>
+    <MeasurementFields item={measure} product={product} prefix="_purchase_return" reference={false} onChange={next=>{setMeasure(next);setAgreedAmount(null);setError("");}}/>
     <p className="caption">Maksimal {formatDecimal(remainingWeight)} kg dari penerimaan ini.</p>
     <label>Nilai retur disepakati (Rp)<NumberInput name="_amount" value={amount} onValueChange={value => { setAgreedAmount(value); setError(""); }} required/></label>
     {method === "kg" && <p className="caption">Terisi dari berat dikembalikan × Rp{formatDecimal(price)}/kg. Sesuaikan jika nominal yang disepakati berbeda.</p>}

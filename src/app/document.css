@@ -119,12 +119,49 @@
   .document-management-grid { grid-template-columns: minmax(0, 1fr); padding-inline: 14px; }
   .document-management > summary > span { display: block; margin: 5px 0 0; }
 }
+.sale-document-link { margin-bottom: 18px; }
+.sale-document-link .caption { margin-top: 6px; }
+.sale-document-options { max-width: 320px; margin-bottom: 16px; }
+.sale-paper .paper-heading h2 { margin-top: 0; }
+.delivery-items th:first-child { width: 75%; }
+.delivery-note { grid-template-columns: minmax(0, 1fr); }
+.delivery-signatures { display: grid; grid-template-columns: 1fr 1fr; text-align: center; gap: 24px; margin: 32px 0; break-inside: avoid; }
+.delivery-signatures p { margin-top: 58px; }
+.paper-status.is-cancelled { color: #9a3030; border-color: #d9aaaa; background: #fff5f5; }
+.thermal-paper { width: 58mm; max-width: 100%; margin-inline: auto; padding: 2mm 5mm; border: 0; box-shadow: none; color: #000; font-family: Arial, sans-serif; font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
+.thermal-paper .paper-header, .thermal-paper .paper-parties, .thermal-paper .paper-settlement, .thermal-paper .paper-footer { display: block; margin: 0; padding: 3mm 0; border-color: #000; }
+.thermal-paper .paper-header, .thermal-paper .paper-heading { text-align: center; }
+.thermal-paper .paper-business { align-items: center; }
+.thermal-paper .paper-business img { width: 18mm; height: 12mm; }
+.thermal-paper .paper-business strong, .thermal-paper .paper-heading h2 { font-size: 14px; }
+.thermal-paper .paper-parties strong { font-size: 12px; }
+.thermal-paper .paper-business p, .thermal-paper .paper-parties p, .thermal-paper .paper-number, .thermal-paper .paper-note p { font-size: 10px; color: #000; }
+.thermal-paper .paper-heading { margin-top: 2mm; }
+.thermal-paper .paper-status { margin-top: 2mm; padding: 1mm 2mm; border: 1px solid #000; color: #000; background: #fff; }
+.thermal-paper .paper-meta { margin-top: 2mm; border: 0; padding: 0; }
+.thermal-paper .paper-meta > div { font-size: 10px; gap: 2mm; }
+.thermal-paper h3 { margin-bottom: 1mm; color: #000; font-size: 10px; }
+.thermal-items { border-block: 1px dashed #000; padding-block: 1mm; }
+.thermal-item { padding-block: 1.5mm; break-inside: avoid; }
+.thermal-item > strong { display: block; }
+.thermal-item > div { display: flex; justify-content: space-between; gap: 2mm; }
+.thermal-item b { flex-shrink: 0; font-weight: 600; }
+.thermal-item small { display: block; font-size: 9px; }
+.thermal-paper .paper-totals { margin-top: 3mm; }
+.thermal-paper .paper-totals > div { padding: 1mm 0; gap: 2mm; font-size: 11px; }
+.thermal-paper .paper-meta dt, .thermal-paper .paper-totals dt, .thermal-paper .paper-balance dd { color: #000; }
+.thermal-paper .paper-totals .paper-balance { border-color: #000; font-size: 12px; }
+.thermal-paper .paper-footer { border-top: 1px dashed #000; text-align: center; font-size: 9px; color: #000; }
+.thermal-paper .paper-footer strong, .thermal-paper .paper-footer > span { color: #000; }
+.thermal-paper .paper-footer > span { display: block; text-align: center; margin-top: 1mm; }
+.document-export-surface.is-thermal { width: 58mm; }
 @page { size: A4; margin: 14mm; }
 @media print {
   body:has(.purchase-document) { background: white; color: black; }
   .app-layout:has(.purchase-document) .sidebar, .app-layout:has(.purchase-document) .bottom-nav,
   .app-layout:has(.purchase-document) .app-header, .app-layout:has(.purchase-document) .skip-link,
   .purchase-document-back, .document-share-toolbar, .document-management, .document-export-surface,
+  .sale-document-options, .thermal-print-hint,
   .purchase-document > .notice { display: none !important; }
   .app-layout:has(.purchase-document) .app-main { margin: 0 !important; }
   .app-layout:has(.purchase-document) .page-content { padding: 0 !important; max-width: none; }
@@ -133,4 +170,6 @@
   .paper-header, .paper-parties, .paper-weights, .paper-settlement, .paper-footer, .paper-table tr { break-inside: avoid; }
   .paper-table thead { display: table-header-group; }
   .paper-heading h2 { font-size: 17px; }
+  .thermal-paper { width: 48mm; max-width: 48mm; margin: 0; padding: 0; }
+  .thermal-paper .paper-heading h2 { font-size: 14px; }
 }

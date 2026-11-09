@@ -19,8 +19,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Que
   const q = await searchParams, today = businessToday(), completed = q.status === "done", office = roles.some(r => officeRoles.includes(r));
   const period = resolvePeriod(q), page = pageNumber(q);
   let request = completed
-    ? db.rpc("receiving_history").neq("status", "cancelled").order("measurement_date", { ascending: false }).order("created_at", { ascending: false }).order("id")
-    : db.rpc("receiving_queue").order("purchase_date", { ascending: false }).order("document_no", { ascending: false }).order("id");
+    ? db.rpc("receiving_history_measured").neq("status", "cancelled").order("measurement_date", { ascending: false }).order("created_at", { ascending: false }).order("id")
+    : db.rpc("receiving_queue_measured").order("purchase_date", { ascending: false }).order("document_no", { ascending: false }).order("id");
   const dateColumn = completed ? "measurement_date" : "purchase_date";
   if (period.start) request = request.gte(dateColumn, period.start);
   if (period.end) request = request.lte(dateColumn, period.end);

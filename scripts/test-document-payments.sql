@@ -30,8 +30,11 @@ begin
  or (select payment_state from public.sales_purchase_documents where id=paid) is distinct from 'paid' then
    raise exception 'Status penjualan belum bayar/cicilan/lunas tidak sesuai';
  end if;
- if exists(select 1 from public.sales_purchase_documents where id in (draft,corrected,production)) then
-   raise exception 'Draft, dokumen dikoreksi, atau produksi masuk daftar';
+ if exists(select 1 from public.sales_purchase_documents where id in (draft,production)) then
+   raise exception 'Draft atau produksi masuk daftar';
+ end if;
+ if (select payment_state from public.sales_purchase_documents where id=corrected) is distinct from 'cancelled' then
+   raise exception 'Dokumen dibatalkan harus tetap terbaca dengan status cancelled';
  end if;
  if exists(select 1 from public.sales_purchase_documents d join public.obligations b on b.source_id=d.id and b.kind='payable'
    where d.kind='purchase_receipt' and d.payment_state<>case when b.balance_amount<=0 then 'paid' else 'unpaid' end) then
